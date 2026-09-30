@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  FACULTY
+  ADMIN
+}
+
+enum ItemStatus {
+  AVAILABLE
+  MAINTENANCE
+  RETIRED
+}
+
+enum ItemCondition {
+  NEW
+  GOOD
+  DAMAGED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  BORROWED
+  RETURNED
+  OVERDUE
+}
+
+model User {
+  id            Int      @id @default(autoincrement())
+  name          String
+  email         String   @unique
+  passwordHash  String
+  role          Role     @default(STUDENT)
+  department    String?
+  isBlacklisted Boolean  @default(false)
+  penaltyPoints Int      @default(0)
+  createdAt     DateTime @default(now())
+  loans         Loan[]
+  decisions     Loan[]   @relation("DecidedBy")
+
+  @@index([role])
+}
+
+model Category {
+  id          Int     @id @default(autoincrement())
+  name        String  @unique
+  slug        String  @unique
+  icon        String
+  description String?
+  items       Item[]
+}
+
+model Item {
+  id                Int           @id @default(autoincrement())
+  code              String        @unique
+  name              String
+  description       String?
+  categoryId        Int
+  category          Category      @relation(fields: [categoryId], references: [id])
+  totalQuantity     Int
+  availableQuantity Int
+  condition         ItemCondition @default(GOOD)
+  status            ItemStatus    @default(AVAILABLE)
+  department        String?
+  imageUrl          String?
+  createdAt         DateTime      @default(now())
+  loans             Loan[]
+
+  @@index([categoryId])
+  @@index([status])
+}
+
+model Loan {
+  id             Int           @id @default(autoincrement())
+  userId         Int
+  user           User          @relation(fields: [userId], references: [id])
+  itemId         Int
+  item           Item          @relation(fields: [itemId], references: [id])
+  quantity       Int
+  purpose        String
+  dateNeeded     DateTime
+  returnDate     DateTime
+  status         RequestStatus @default(PENDING)
+  remarks        String?
+  outcome        String?
+  decidedById    Int?
+  decidedBy      User?         @relation("DecidedBy", fields: [decidedById], references: [id])
+  borrowedAt     DateTime?
+  returnedAt     DateTime?
+  reminderSentAt DateTime?
+  createdAt      DateTime      @default(now())
+
+  @@index([status])
+  @@index([userId])
+  @@index([itemId])
+}
