@@ -2,12 +2,19 @@ import { useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Icon } from "./Icon";
+import { ThemeToggle } from "./ThemeToggle";
 import { Badge } from "./ui";
 
 const mainNav = [
   { to: "/dashboard", label: "Dashboard", icon: "home", end: true },
   { to: "/catalog", label: "Browse Equipment", icon: "box" },
+  { to: "/my-reservations", label: "My Reservations", icon: "calendar" },
   { to: "/my-loans", label: "My Loans", icon: "clipboard" },
+];
+
+// Admins and faculty share the reservation queue; everything else is admin-only.
+const staffNav = [
+  { to: "/admin/reservations", label: "Reservations", icon: "calendar" },
 ];
 
 const adminNav = [
@@ -40,6 +47,24 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
           </NavLink>
         ))}
       </div>
+      {user && (user.role === "ADMIN" || user.role === "FACULTY") && (
+        <div>
+          <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+            Equipment Desk
+          </p>
+          {staffNav.map((n) => (
+            <NavLink
+              key={n.to}
+              to={n.to}
+              className={linkClass}
+              onClick={onNavigate}
+            >
+              <Icon name={n.icon} />
+              {n.label}
+            </NavLink>
+          ))}
+        </div>
+      )}
       {user?.role === "ADMIN" && (
         <div>
           <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
@@ -95,13 +120,16 @@ export default function Layout() {
   return (
     <div className="min-h-screen">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/15 bg-primary-900/90 shadow-2xl backdrop-blur-2xl lg:flex">
-        <div className="border-b border-white/10 px-4 py-5">
-          <p className="text-lg font-bold tracking-tight text-white">
-            EquipHub
-          </p>
-          <p className="text-[11px] uppercase tracking-widest text-slate-400">
-            Campus equipment, simplified
-          </p>
+        <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-5">
+          <div>
+            <p className="text-lg font-bold tracking-tight text-white">
+              EquipHub
+            </p>
+            <p className="text-[11px] uppercase tracking-widest text-slate-400">
+              Campus equipment, simplified
+            </p>
+          </div>
+          <ThemeToggle variant="sidebar" />
         </div>
         <NavItems />
         <UserPanel />
@@ -116,13 +144,16 @@ export default function Layout() {
           <aside className="absolute inset-y-0 left-0 flex w-64 flex-col bg-primary-900/95 shadow-xl backdrop-blur-2xl">
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
               <span className="text-lg font-bold text-white">EquipHub</span>
-              <button
-                className="text-slate-300 hover:text-white"
-                onClick={() => setOpen(false)}
-                aria-label="Close menu"
-              >
-                <Icon name="close" />
-              </button>
+              <div className="flex items-center gap-2">
+                <ThemeToggle variant="sidebar" />
+                <button
+                  className="text-slate-300 hover:text-white"
+                  onClick={() => setOpen(false)}
+                  aria-label="Close menu"
+                >
+                  <Icon name="close" />
+                </button>
+              </div>
             </div>
             <NavItems onNavigate={() => setOpen(false)} />
             <UserPanel />
@@ -139,7 +170,10 @@ export default function Layout() {
           <Icon name="menu" className="h-4 w-4" />
           Menu
         </button>
-        <span className="font-bold text-primary-800">EquipHub</span>
+        <div className="flex items-center gap-3">
+          <span className="font-bold text-primary-800">EquipHub</span>
+          <ThemeToggle />
+        </div>
       </header>
 
       <main className="lg:pl-64">

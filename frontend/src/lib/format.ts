@@ -33,6 +33,24 @@ export const loanStatusTone: Record<string, string> = {
   OVERDUE: 'red',
 }
 
+export const reservationStatusTone: Record<string, string> = {
+  PENDING: 'yellow',
+  APPROVED: 'blue',
+  REJECTED: 'gray',
+  CANCELLED: 'gray',
+  EXPIRED: 'red',
+  COMPLETED: 'green',
+}
+
+/** "14:30" -> "2:30pm"; passes anything unparseable straight through. */
+export function formatClock(time?: string | null): string {
+  if (!time) return ''
+  const [h, m] = time.split(':').map(Number)
+  if (!Number.isFinite(h) || !Number.isFinite(m)) return time
+  const suffix = h >= 12 ? 'pm' : 'am'
+  return `${h % 12 || 12}:${String(m).padStart(2, '0')}${suffix}`
+}
+
 export const itemStatusTone: Record<string, string> = {
   AVAILABLE: 'green',
   MAINTENANCE: 'yellow',

@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { api, apiErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import type { Category, Item } from "../types";
-import { conditionTone } from "../lib/format";
+import { conditionTone, formatDate } from "../lib/format";
 import {
   Badge,
   Button,
@@ -296,12 +296,19 @@ export default function Catalog() {
                         {item.category.name}
                         {item.department ? ` - ${item.department}` : ""}
                       </p>
-                      <div className="mt-auto flex items-center justify-between pt-2">
-                        <Badge tone={out ? "red" : "green"}>
-                          {item.status === "AVAILABLE"
-                            ? `${item.availableQuantity} of ${item.totalQuantity} available`
-                            : item.status}
-                        </Badge>
+                      <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
+                        <div className="flex flex-wrap items-center gap-1">
+                          <Badge tone={out ? "red" : "green"}>
+                            {item.status === "AVAILABLE"
+                              ? `${item.availableQuantity} of ${item.totalQuantity} available`
+                              : item.status}
+                          </Badge>
+                          {out && item.nextAvailableDate && (
+                            <Badge tone="blue">
+                              Back {formatDate(item.nextAvailableDate)}
+                            </Badge>
+                          )}
+                        </div>
                         <Button
                           variant="secondary"
                           size="sm"

@@ -1,5 +1,12 @@
 export type Role = 'STUDENT' | 'FACULTY' | 'ADMIN'
 export type LoanStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'BORROWED' | 'RETURNED' | 'OVERDUE'
+export type ReservationStatus =
+  | 'PENDING'
+  | 'APPROVED'
+  | 'REJECTED'
+  | 'CANCELLED'
+  | 'EXPIRED'
+  | 'COMPLETED'
 export type ItemStatus = 'AVAILABLE' | 'MAINTENANCE' | 'RETIRED'
 export type ItemCondition = 'NEW' | 'GOOD' | 'DAMAGED'
 
@@ -36,6 +43,8 @@ export interface Item {
   department: string | null
   imageUrl: string | null
   createdAt: string
+  /** Populated only when availableQuantity is 0 (see items.ts). */
+  nextAvailableDate?: string | null
 }
 
 export interface Loan {
@@ -56,6 +65,30 @@ export interface Loan {
   borrowedAt: string | null
   returnedAt: string | null
   reminderSentAt: string | null
+  createdAt: string
+}
+
+/**
+ * A hold on an item. reservationDate is the pickup day, returnDate the day it
+ * must come back (stored at the end of that day). pickupTime is "HH:MM" or null.
+ */
+export interface Reservation {
+  id: number
+  userId: number
+  user?: User
+  itemId: number
+  item: Item
+  quantity: number
+  reservationDate: string
+  pickupTime: string | null
+  returnDate: string
+  purpose: string
+  status: ReservationStatus
+  remarks: string | null
+  decidedById: number | null
+  decidedBy?: User | null
+  loanId: number | null
+  pickedUpAt: string | null
   createdAt: string
 }
 

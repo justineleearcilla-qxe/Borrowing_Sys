@@ -524,6 +524,100 @@ async function main() {
     });
   }
 
+  // Reservations use date-only pickup dates (local midnight) and an
+  // end-of-day return, matching what routes/reservations.ts stores.
+  if ((await prisma.reservation.count()) === 0) {
+    const pickupIn = (n: number): Date => {
+      const d = new Date()
+      d.setDate(d.getDate() + n)
+      d.setHours(0, 0, 0, 0)
+      return d
+    }
+    const endOfDay = (d: Date): Date => {
+      const c = new Date(d)
+      c.setHours(23, 59, 59, 999)
+      return c
+    }
+
+    await prisma.reservation.createMany({
+      data: [
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-2001")!,
+          quantity: 1,
+          reservationDate: pickupIn(3),
+          pickupTime: "09:00",
+          returnDate: endOfDay(pickupIn(5)),
+          purpose: "Physics lab make-up session",
+          status: "PENDING",
+          createdAt: days(-1),
+        },
+        {
+          userId: faculty.id,
+          itemId: itemsByCode.get("EQ-6001")!,
+          quantity: 2,
+          reservationDate: pickupIn(6),
+          pickupTime: "13:30",
+          returnDate: endOfDay(pickupIn(8)),
+          purpose: "Founders Day stage program",
+          status: "APPROVED",
+          decidedById: admin.id,
+          remarks: "Collect from the equipment desk before 2pm.",
+          createdAt: days(-2),
+        },
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-3001")!,
+          quantity: 1,
+          reservationDate: pickupIn(-10),
+          pickupTime: "10:00",
+          returnDate: endOfDay(pickupIn(-8)),
+          purpose: "Filmmaking club short film shoot",
+          status: "COMPLETED",
+          decidedById: admin.id,
+          pickedUpAt: days(-10),
+          createdAt: days(-12),
+        },
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-4001")!,
+          quantity: 1,
+          reservationDate: pickupIn(2),
+          pickupTime: "14:00",
+          returnDate: endOfDay(pickupIn(4)),
+          purpose: "Capstone demo day rehearsal",
+          status: "CANCELLED",
+          remarks: "Cancelled by borrower",
+          createdAt: days(-3),
+        },
+        {
+          userId: faculty.id,
+          itemId: itemsByCode.get("EQ-5001")!,
+          quantity: 1,
+          reservationDate: pickupIn(-3),
+          pickupTime: "15:00",
+          returnDate: endOfDay(pickupIn(-1)),
+          purpose: "Music elective accompaniment",
+          status: "EXPIRED",
+          createdAt: days(-6),
+        },
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-1002")!,
+          quantity: 1,
+          reservationDate: pickupIn(10),
+          pickupTime: "08:30",
+          returnDate: endOfDay(pickupIn(12)),
+          purpose: "Inter-school volleyball exhibition",
+          status: "REJECTED",
+          decidedById: admin.id,
+          remarks: "Unit is booked for the intramurals opening. Try next week.",
+          createdAt: days(-2),
+        },
+      ],
+    });
+  }
+
   console.log("Seed complete.");
   console.log("Admin:   admin@school.edu / Password123!");
   console.log("Student: maria.student@school.edu / Password123!");

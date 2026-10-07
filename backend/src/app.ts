@@ -10,6 +10,7 @@ import authRoutes from './routes/auth'
 import categoryRoutes from './routes/categories'
 import itemRoutes from './routes/items'
 import loanRoutes from './routes/loans'
+import reservationRoutes from './routes/reservations'
 import dashboardRoutes from './routes/dashboard'
 import reportRoutes from './routes/reports'
 
@@ -28,6 +29,7 @@ export function createApp() {
   app.use('/api/categories', categoryRoutes)
   app.use('/api/items', itemRoutes)
   app.use('/api/loans', loanRoutes)
+  app.use('/api/reservations', reservationRoutes)
   app.use('/api/dashboard', dashboardRoutes)
   app.use('/api/reports', reportRoutes)
 

@@ -8,10 +8,29 @@
       href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%231e3a8a'%3E%3Cpath d='M12 2 2 7v10l10 5 10-5V7L12 2zm0 2.2 7.5 3.8L12 11.8 4.5 8 12 4.2z'/%3E%3C/svg%3E"
     />
     <title>EquipHub - College Equipment Borrowing System</title>
+    <script>
+      /*
+       * Applied before the first paint so a dark-mode user never sees a
+       * flash of the light theme while React boots. Keeps in sync with
+       * src/lib/theme.ts (localStorage key: "theme").
+       */
+      (function () {
+        try {
+          var stored = localStorage.getItem("theme");
+          var prefersDark =
+            window.matchMedia &&
+            window.matchMedia("(prefers-color-scheme: dark)").matches;
+          if (stored === "dark" || (stored !== "light" && prefersDark)) {
+            document.documentElement.setAttribute("data-theme", "dark");
+          }
+        } catch (e) {
+          /* storage unavailable - stay on the light default */
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-c
