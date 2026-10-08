@@ -9,6 +9,8 @@ export type ReservationStatus =
   | 'COMPLETED'
 export type ItemStatus = 'AVAILABLE' | 'MAINTENANCE' | 'RETIRED'
 export type ItemCondition = 'NEW' | 'GOOD' | 'DAMAGED'
+export type WaitlistStatus = 'WAITING' | 'OFFERED' | 'CLAIMED' | 'CANCELLED' | 'EXPIRED'
+export type AppNotificationType = 'WAITLIST_OFFER' | 'WAITLIST_CLAIMED' | 'WAITLIST_MISSED'
 
 export interface User {
   id: number
@@ -89,6 +91,42 @@ export interface Reservation {
   decidedBy?: User | null
   loanId: number | null
   pickedUpAt: string | null
+  createdAt: string
+}
+
+/**
+ * A spot in line for a reservation window. wantedDate/wantedReturn mirror
+ * Reservation.reservationDate/returnDate; position is the live FIFO rank
+ * among WAITING entries on that item (null once the status is anything else).
+ */
+export interface WaitlistEntry {
+  id: number
+  userId: number
+  itemId: number
+  item: Item
+  quantity: number
+  wantedDate: string
+  pickupTime: string | null
+  wantedReturn: string
+  purpose: string
+  status: WaitlistStatus
+  offeredAt: string | null
+  /** Offered slots must be claimed before this instant. */
+  offerExpiresAt: string | null
+  reservationId: number | null
+  createdAt: string
+  position?: number | null
+}
+
+/** In-app notification shown by the bell in the layout. */
+export interface AppNotification {
+  id: number
+  userId: number
+  type: AppNotificationType
+  title: string
+  body: string
+  link: string | null
+  readAt: string | null
   createdAt: string
 }
 

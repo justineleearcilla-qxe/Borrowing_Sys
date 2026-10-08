@@ -62,3 +62,23 @@ export const conditionTone: Record<string, string> = {
   GOOD: 'green',
   DAMAGED: 'red',
 }
+
+export const waitlistStatusTone: Record<string, string> = {
+  WAITING: 'yellow',
+  OFFERED: 'blue',
+  CLAIMED: 'green',
+  CANCELLED: 'gray',
+  EXPIRED: 'red',
+}
+
+/** "47m left" / "13h left" / "3d left" for the 24h offer deadline. */
+export function formatTimeLeft(iso: string | null): string {
+  if (!iso) return ''
+  const ms = new Date(iso).getTime() - Date.now()
+  if (ms <= 0) return 'expired'
+  const minutes = Math.floor(ms / 60000)
+  if (minutes < 60) return `${minutes}m left`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 48) return `${hours}h left`
+  return `${Math.floor(hours / 24)}d left`
+}

@@ -4,6 +4,7 @@ import { prisma } from "../lib/prisma";
 import { requireAuth, requireAdmin } from "../middleware/auth";
 import { runMaintenanceSweep } from "../services/cron";
 import { sendMail } from "../services/mailer";
+import { releaseSlot } from "../services/waitlist";
 import { ApiError, asyncHandler } from "../utils/http";
 import { sanitizeUser } from "../utils/serialize";
 import { asAnyDate, asInt, reqStr } from "../utils/validate";
@@ -325,6 +326,9 @@ router.patch(
         },
       });
     });
+
+    // The unit is back - anyone waiting for a window on it can be offered.
+    await releaseSlot(loan.itemId);
 
     res.json(updated);
   }),

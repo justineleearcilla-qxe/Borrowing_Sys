@@ -1,6 +1,6 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { api, apiErrorMessage } from "../api/client";
+import { api, apiError, apiErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import type { Item } from "../types";
 import { conditionTone, formatDate, itemStatusTone, toDateInput } from "../lib/format";
@@ -45,6 +45,14 @@ export default function ItemDetail() {
   const [resError, setResError] = useState("");
   const [resSuccess, setResSuccess] = useState("");
   const [resBusy, setResBusy] = useState(false);
+  // A 409 means the window is genuinely taken - that is the only case where
+  // joining the waitlist can actually help, so it gates the offer below.
+  const [resConflict, setResConflict] = useState(false);
+  const [joining, setJoining] = useState(false);
+  const [joinNotice, setJoinNotice] = useState<{
+    tone: "success" | "error";
+    text: string;
+  } | null>(null);
   // Matches MAX_AHEAD_DAYS in routes/reservations.ts so the browser explains
   // the limit before the server has to reject the request.
   const maxPickupDate = toDateInput(
@@ -123,6 +131,8 @@ export default function ItemDetail() {
     e.preventDefault();
     setResError("");
     setResSuccess("");
+    setResConflict(false);
+    setJoinNotice(null);
     setResBusy(true);
     try {
       await api.post("/reservations", {
@@ -136,9 +146,36 @@ export default function ItemDetail() {
       setResSuccess("Reservation requested. Track it under My Reservations.");
       setResForm((f) => ({ ...f, quantity: "1", purpose: "", pickupTime: "" }));
     } catch (err) {
-      setResError(apiErrorMessage(err));
+      const failure = apiError(err);
+      setResError(failure.message);
+      setResConflict(failure.status === 409);
     } finally {
       setResBusy(false);
+    }
+  }
+
+  /** Queue these exact form values for the next free window. */
+  async function onJoinWaitlist() {
+    setJoining(true);
+    setJoinNotice(null);
+    try {
+      await api.post("/waitlist", {
+        itemId: Number(id),
+        quantity: Number(resForm.quantity),
+        wantedDate: resForm.reservationDate,
+        pickupTime: resForm.pickupTime || undefined,
+        wantedReturn: resForm.returnDate,
+        purpose: resForm.purpose,
+      });
+      setResError("");
+      setJoinNotice({
+        tone: "success",
+        text: "You're on the waitlist for these dates. The next free window is held for you for 24 hours - watch the bell icon and My Reservations.",
+      });
+    } catch (err) {
+      setJoinNotice({ tone: "error", text: apiErrorMessage(err) });
+    } finally {
+      setJoining(false);
     }
   }
 
@@ -345,6 +382,36 @@ export default function ItemDetail() {
               <>
                 {resError && <Alert tone="error">{resError}</Alert>}
                 {resSuccess && <Alert tone="success">{resSuccess}</Alert>}
+                {resConflict && joinNotice?.tone !== "success" && (
+                  <div className="rounded-lg border border-slate-200 bg-slate-50 p-4">
+                    <p className="text-sm font-bold text-slate-700">
+                      Those dates are already taken.
+                    </p>
+                    <p className="mt-1 text-sm text-slate-500">
+                      Join the waitlist with this exact window and the next
+                      free slot will be held for you for 24 hours before it
+                      passes to the next person in line.
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-3">
+                      <Button
+                        variant="secondary"
+                        onClick={onJoinWaitlist}
+                        disabled={joining}
+                      >
+                        {joining ? "Joining..." : "Join the waitlist"}
+                      </Button>
+                      <Link
+                        to="/my-reservations"
+                        className="text-xs font-semibold text-primary-800 hover:underline"
+                      >
+                        Track it under My Reservations
+                      </Link>
+                    </div>
+                  </div>
+                )}
+                {joinNotice && (
+                  <Alert tone={joinNotice.tone}>{joinNotice.text}</Alert>
+                )}
                 {item.availableQuantity === 0 && (
                   <Alert tone="info">
                     Every unit is out right now

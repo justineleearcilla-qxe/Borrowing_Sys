@@ -64,7 +64,7 @@ async function nextAvailableByItem(
   const today = startOfDay(now).getTime();
   const DAY_MS = 24 * 60 * 60 * 1000;
 
-  const [loans, reservations] = await Promise.all([
+  const [loans, reservations, offers] = await Promise.all([
     prisma.loan.findMany({
       where: {
         itemId: { in: zeroIds },
@@ -81,6 +81,15 @@ async function nextAvailableByItem(
       },
       select: { itemId: true, reservationDate: true, returnDate: true },
     }),
+    // A waitlist offer holds its window for the 24h claim deadline.
+    prisma.waitlistEntry.findMany({
+      where: {
+        itemId: { in: zeroIds },
+        status: "OFFERED",
+        wantedReturn: { gt: now },
+      },
+      select: { itemId: true, wantedDate: true, wantedReturn: true },
+    }),
   ]);
 
   const blocks = new Map<number, Array<[number, number]>>();
@@ -94,6 +103,7 @@ async function nextAvailableByItem(
   };
   for (const loan of loans) addBlock(loan.itemId, loan.dateNeeded, loan.returnDate);
   for (const res of reservations) addBlock(res.itemId, res.reservationDate, res.returnDate);
+  for (const offer of offers) addBlock(offer.itemId, offer.wantedDate, offer.wantedReturn);
 
   for (const [itemId, list] of blocks) {
     list.sort((a, b) => a[0] - b[0]);

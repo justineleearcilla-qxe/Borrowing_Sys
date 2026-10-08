@@ -1,11 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api, apiErrorMessage } from "../api/client";
-import type { Reservation, ReservationStatus } from "../types";
+import type { Reservation, ReservationStatus, WaitlistEntry } from "../types";
 import {
   formatClock,
   formatDate,
+  formatDateTime,
+  formatTimeLeft,
   reservationStatusTone,
+  waitlistStatusTone,
 } from "../lib/format";
 import {
   Alert,
@@ -23,16 +26,26 @@ const ACTIVE_STATUSES: ReservationStatus[] = ["PENDING", "APPROVED"];
 
 export default function MyReservations() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
+  const [waitlist, setWaitlist] = useState<WaitlistEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState<"upcoming" | "history">("upcoming");
+  const [notice, setNotice] = useState("");
+  const [tab, setTab] = useState<"upcoming" | "history" | "waitlist">(
+    "upcoming",
+  );
   const [cancellingId, setCancellingId] = useState<number | null>(null);
+  const [busyId, setBusyId] = useState<number | null>(null);
 
   function load() {
     setLoading(true);
-    api
-      .get<Reservation[]>("/reservations/mine")
-      .then((res) => setReservations(res.data))
+    Promise.all([
+      api.get<Reservation[]>("/reservations/mine"),
+      api.get<WaitlistEntry[]>("/waitlist/mine"),
+    ])
+      .then(([res, wait]) => {
+        setReservations(res.data);
+        setWaitlist(wait.data);
+      })
       .catch((e) => setError(apiErrorMessage(e)))
       .finally(() => setLoading(false));
   }
@@ -43,6 +56,7 @@ export default function MyReservations() {
     if (!window.confirm("Cancel this reservation?")) return;
     setCancellingId(id);
     setError("");
+    setNotice("");
     try {
       await api.patch(`/reservations/${id}/cancel`);
       load();
@@ -50,6 +64,41 @@ export default function MyReservations() {
       setError(apiErrorMessage(e));
     } finally {
       setCancellingId(null);
+    }
+  }
+
+  /** Turn an offered slot into a PENDING reservation. */
+  async function claim(id: number) {
+    setBusyId(id);
+    setError("");
+    setNotice("");
+    try {
+      await api.post(`/waitlist/${id}/claim`);
+      setNotice(
+        "Slot claimed - your reservation is waiting for approval. See the Upcoming tab.",
+      );
+      load();
+    } catch (e) {
+      setError(apiErrorMessage(e));
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  /** Step out of the queue (frees any slot this entry was holding). */
+  async function leave(id: number) {
+    if (!window.confirm("Leave the waitlist queue?")) return;
+    setBusyId(id);
+    setError("");
+    setNotice("");
+    try {
+      await api.patch(`/waitlist/${id}/leave`);
+      setNotice("You have left the queue.");
+      load();
+    } catch (e) {
+      setError(apiErrorMessage(e));
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -82,12 +131,18 @@ export default function MyReservations() {
           <Alert tone="error">{error}</Alert>
         </div>
       )}
+      {notice && (
+        <div className="mb-4">
+          <Alert tone="success">{notice}</Alert>
+        </div>
+      )}
 
       <div className="mb-4 flex gap-0">
         {(
           [
             ["upcoming", `Upcoming (${upcoming.length})`],
             ["history", `History (${history.length})`],
+            ["waitlist", `Waitlist (${waitlist.length})`],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -107,12 +162,101 @@ export default function MyReservations() {
       <Card>
         <CardHeader
           title={
-            tab === "upcoming" ? "Upcoming and awaiting approval" : "Past holds"
+            tab === "upcoming"
+              ? "Upcoming and awaiting approval"
+              : tab === "waitlist"
+                ? "Queued waitlist requests"
+                : "Past holds"
           }
         />
         {loading ? (
           <div className="flex justify-center py-16 text-primary-800">
             <Spinner className="h-7 w-7" />
+          </div>
+        ) : tab === "waitlist" && waitlist.length === 0 ? (
+          <div className="p-5">
+            <EmptyState
+              title="Not on any waitlist"
+              hint="When the dates you want are taken, open the item and join the waitlist - the next free slot is held for you for 24 hours."
+            />
+          </div>
+        ) : tab === "waitlist" ? (
+          <div className="divide-y divide-slate-200">
+            {waitlist.map((w) => (
+              <div key={w.id} className="px-4 py-4 sm:px-5">
+                <div className="flex flex-wrap items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <Link
+                      to={`/items/${w.item.id}`}
+                      className="text-sm font-bold text-slate-800 hover:text-primary-800 hover:underline"
+                    >
+                      {w.item.name}
+                    </Link>
+                    <span className="ml-2 font-mono text-[11px] text-slate-400">
+                      {w.item.code}
+                    </span>
+                    <p className="mt-1 text-xs text-slate-500">
+                      Pickup: {formatDate(w.wantedDate)}
+                      {w.pickupTime && <> at {formatClock(w.pickupTime)}</>}
+                      {" - Return by: "}
+                      <span className="font-semibold">
+                        {formatDate(w.wantedReturn)}
+                      </span>
+                      {" - Quantity: "}
+                      {w.quantity}
+                    </p>
+                    <p className="mt-1 max-w-xl text-xs italic text-slate-500">
+                      Purpose: {w.purpose}
+                    </p>
+                    {w.status === "WAITING" && w.position != null && (
+                      <p className="mt-1 text-xs font-semibold text-slate-600">
+                        You are #{w.position} in line for these dates.
+                      </p>
+                    )}
+                    {w.status === "OFFERED" && w.offerExpiresAt && (
+                      <p className="mt-1 text-xs font-semibold text-primary-800">
+                        A slot is held for you - claim by{" "}
+                        {formatDateTime(w.offerExpiresAt)} (
+                        {formatTimeLeft(w.offerExpiresAt)}).
+                      </p>
+                    )}
+                    {w.status === "CLAIMED" && (
+                      <p className="mt-1 text-xs text-slate-500">
+                        Claimed - the reservation is in the Upcoming tab.
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex flex-col items-end gap-2">
+                    <Badge tone={waitlistStatusTone[w.status] as never}>
+                      {w.status === "WAITING" && w.position != null
+                        ? `WAITING #${w.position}`
+                        : w.status}
+                    </Badge>
+                    <div className="flex gap-2">
+                      {w.status === "OFFERED" && (
+                        <Button
+                          size="sm"
+                          onClick={() => claim(w.id)}
+                          disabled={busyId === w.id}
+                        >
+                          {busyId === w.id ? "Claiming..." : "Claim now"}
+                        </Button>
+                      )}
+                      {(w.status === "WAITING" || w.status === "OFFERED") && (
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          onClick={() => leave(w.id)}
+                          disabled={busyId === w.id}
+                        >
+                          Leave queue
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : shown.length === 0 ? (
           <div className="p-5">

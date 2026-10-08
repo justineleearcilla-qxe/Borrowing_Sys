@@ -1,5 +1,6 @@
 import { prisma } from '../lib/prisma'
 import { sendMail } from './mailer'
+import { expireStaleOffers, releaseSlot } from './waitlist'
 
 const PENALTY_PER_OFFENSE = 2
 const BLACKLIST_THRESHOLD = 6
@@ -14,25 +15,28 @@ export async function expireStaleReservations(now: Date = new Date()): Promise<n
   // Only reservations whose pickup date has already passed can be stale.
   const candidates = await prisma.reservation.findMany({
     where: { status: { in: ['PENDING', 'APPROVED'] }, reservationDate: { lt: now } },
-    select: { id: true, reservationDate: true },
+    select: { id: true, reservationDate: true, itemId: true },
   })
   const cutoff = now.getTime() - RESERVATION_GRACE_DAYS * DAY_MS
-  const staleIds = candidates
-    .filter((r) => r.reservationDate.getTime() < cutoff)
-    .map((r) => r.id)
-  if (staleIds.length === 0) return 0
+  const staleRows = candidates.filter((r) => r.reservationDate.getTime() < cutoff)
+  if (staleRows.length === 0) return 0
   // updateMany, not N x update: no race, one round trip, no partial expiry.
   await prisma.reservation.updateMany({
-    where: { id: { in: staleIds } },
+    where: { id: { in: staleRows.map((r) => r.id) } },
     data: { status: 'EXPIRED' },
   })
-  return staleIds.length
+  // Every freed window goes to the next person waiting for that item.
+  for (const itemId of new Set(staleRows.map((r) => r.itemId))) {
+    await releaseSlot(itemId)
+  }
+  return staleRows.length
 }
 
-export async function runMaintenanceSweep(): Promise<{ flagged: number; reminded: number; expired: number }> {
+export async function runMaintenanceSweep(): Promise<{ flagged: number; reminded: number; expired: number; offersExpired: number }> {
   const now = new Date()
 
   const expired = await expireStaleReservations(now)
+  const offersExpired = await expireStaleOffers(now)
 
   const dueLoans = await prisma.loan.findMany({
     where: { status: 'BORROWED', returnDate: { lt: now } },
@@ -71,10 +75,10 @@ export async function runMaintenanceSweep(): Promise<{ flagged: number; reminded
     await prisma.loan.update({ where: { id: loan.id }, data: { reminderSentAt: new Date() } })
   }
 
-  if (dueLoans.length || reminders.length || expired) {
+  if (dueLoans.length || reminders.length || expired || offersExpired) {
     console.log(
-      `[cron] flagged ${dueLoans.length} overdue, sent ${reminders.length} reminders, expired ${expired} reservations`,
+      `[cron] flagged ${dueLoans.length} overdue, sent ${reminders.length} reminders, expired ${expired} reservations, expired ${offersExpired} waitlist offers`,
     )
   }
-  return { flagged: dueLoans.length, reminded: reminders.length, expired }
+  return { flagged: dueLoans.length, reminded: reminders.length, expired, offersExpired }
 }
