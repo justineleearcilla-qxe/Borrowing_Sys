@@ -1,30 +1,25 @@
 import { Router } from "express";
-import { Prisma, RequestStatus, ReservationStatus } from "@prisma/client";
+import { Prisma, ReservationStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { requireAuth, requireStaff } from "../middleware/auth";
 import { ApiError, asyncHandler } from "../utils/http";
 import { sanitizeUser } from "../utils/serialize";
 import { sendMail } from "../services/mailer";
+import { assertSlotFree } from "../services/hold";
+import { releaseSlot } from "../services/waitlist";
 import {
   asDateOnly,
   asEnum,
   asInt,
   asTime,
-  endOfDay,
+  assertReservationWindow,
   optEnum,
   prettyDate,
   reqStr,
-  startOfDay,
 } from "../utils/validate";
 
 const router = Router();
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-/** Reservations in these states occupy the equipment for their date range. */
-const HOLDING_RESERVATIONS: ReservationStatus[] = ["PENDING", "APPROVED"];
-/** Loans in these states occupy the equipment for their date range. */
-const HOLDING_LOANS: RequestStatus[] = ["APPROVED", "BORROWED", "OVERDUE"];
 const ALL_STATUSES: ReservationStatus[] = [
   "PENDING",
   "APPROVED",
@@ -35,119 +30,10 @@ const ALL_STATUSES: ReservationStatus[] = [
 ];
 const DECISIONS = ["approve", "reject"] as const;
 
-/** How far ahead a reservation may be placed. */
-const MAX_AHEAD_DAYS = 180;
-
 function parseId(raw: string): number {
   const id = Number(raw);
   if (!Number.isInteger(id) || id < 1) throw new ApiError(400, "Invalid id");
   return id;
-}
-
-/** A single unit's contribution to an occupied date range. */
-interface HoldRecord {
-  quantity: number;
-  returnDate: Date;
-}
-
-interface Hold {
-  records: HoldRecord[];
-  units: number;
-}
-
-/**
- * How many units are already spoken for over [start, end), split into
- * overlapping reservations and overlapping loans.
- *
- * Overlap test is the standard interval test: aStart < bEnd && aEnd > bStart.
- * We count PENDING reservations too, otherwise two people can hold the same
- * slot while both are still waiting for a decision.
- */
-async function measureHold(
-  itemId: number,
-  start: Date,
-  end: Date,
-  excludeReservationId?: number,
-): Promise<Hold> {
-  const [reservations, loans] = await Promise.all([
-    prisma.reservation.findMany({
-      where: {
-        itemId,
-        status: { in: HOLDING_RESERVATIONS },
-        ...(excludeReservationId ? { id: { not: excludeReservationId } } : {}),
-        reservationDate: { lt: end },
-        returnDate: { gt: start },
-      },
-      select: { quantity: true, returnDate: true },
-    }),
-    prisma.loan.findMany({
-      where: {
-        itemId,
-        status: { in: HOLDING_LOANS },
-        dateNeeded: { lt: end },
-        returnDate: { gt: start },
-      },
-      select: { quantity: true, returnDate: true },
-    }),
-  ]);
-
-  const records: HoldRecord[] = [
-    ...reservations.map((r) => ({ quantity: r.quantity, returnDate: r.returnDate })),
-    ...loans.map((l) => ({ quantity: l.quantity, returnDate: l.returnDate })),
-  ];
-  return { records, units: records.reduce((sum, r) => sum + r.quantity, 0) };
-}
-
-/**
- * Earliest date on which `needed` units would actually be free again.
- *
- * Walks the overlapping records in return-date order and counts the units
- * coming back, stopping as soon as the shortfall is covered. Returns the
- * day AFTER those units are due back - equipment handed in today can be
- * collected tomorrow.
- */
-function nextAvailableDate(hold: Hold, total: number, needed: number): Date | null {
-  const surplus = hold.units + needed - total;
-  if (surplus <= 0) return null;
-  const sorted = [...hold.records].sort(
-    (a, b) => a.returnDate.getTime() - b.returnDate.getTime(),
-  );
-  if (sorted.length === 0) return null;
-  let freed = 0;
-  for (const rec of sorted) {
-    freed += rec.quantity;
-    if (freed >= surplus) return new Date(startOfDay(rec.returnDate).getTime() + DAY_MS);
-  }
-  return new Date(
-    startOfDay(sorted[sorted.length - 1].returnDate).getTime() + DAY_MS,
-  );
-}
-
-/**
- * Throws 409 when the requested window would over-book the item.
- *
- * `excludeReservationId` is essential on the decide/pickup paths: the
- * reservation being approved is itself in a HOLDING status, so without
- * excluding it, it would always conflict with itself.
- */
-async function assertSlotFree(
-  item: { id: number; name: string; totalQuantity: number },
-  start: Date,
-  end: Date,
-  quantity: number,
-  excludeReservationId?: number,
-): Promise<void> {
-  const hold = await measureHold(item.id, start, end, excludeReservationId);
-  if (hold.units + quantity > item.totalQuantity) {
-    const next = nextAvailableDate(hold, item.totalQuantity, quantity);
-    const hint = next
-      ? ` Next available date: ${prettyDate(next)}.`
-      : " Please try different dates.";
-    throw new ApiError(
-      409,
-      `${item.name} is already reserved or borrowed for the requested dates.${hint}`,
-    );
-  }
 }
 
 const itemWithCategory = { item: { include: { category: true } } } as const;
@@ -177,24 +63,9 @@ router.post(
     const returnDay = asDateOnly(b.returnDate, "Return date");
     const purpose = reqStr(b.purpose, "Purpose", { min: 5, max: 300 });
 
-    // --- logical date rules (past dates, ordering, sane horizon) ---
-    const today = startOfDay(new Date());
-    if (pickupDate.getTime() < today.getTime()) {
-      throw new ApiError(400, "Reservation date cannot be in the past");
-    }
-    const horizon = new Date(today.getTime() + MAX_AHEAD_DAYS * DAY_MS);
-    if (pickupDate.getTime() > horizon.getTime()) {
-      throw new ApiError(
-        400,
-        `Reservations can only be made up to ${MAX_AHEAD_DAYS} days in advance`,
-      );
-    }
-    if (returnDay.getTime() <= pickupDate.getTime()) {
-      throw new ApiError(400, "Return date must be after the reservation date");
-    }
-    // Stored at 23:59:59 of the chosen day: "due March 2" must not count as
-    // overdue the instant March 2 begins.
-    const returnDate = endOfDay(returnDay);
+    // Shared calendar rules (past dates, ordering, sane horizon) + the
+    // end-of-day normalization the database stores.
+    const returnDate = assertReservationWindow(pickupDate, returnDay);
 
     const item = await prisma.item.findUnique({ where: { id: itemId } });
     if (!item) throw new ApiError(404, "Equipment not found");
@@ -315,6 +186,10 @@ router.patch(
       data: { status: "CANCELLED", remarks },
       include: itemWithCategory,
     });
+
+    // The slot is free again - offer it to the next person waiting for it.
+    await releaseSlot(existing.itemId);
+
     res.json(updated);
   }),
 );
@@ -381,6 +256,10 @@ router.patch(
         cleanRemarks ? `\n\nRemarks from the equipment desk: ${cleanRemarks}` : ""
       }${action === "approve" ? "\n\nPlease collect it from the equipment desk at your reserved time." : ""}\n\nEquipment Desk`,
     );
+
+    // A rejection frees the window it was asking for; approval is net-zero
+    // (it moves into a holding status), so only reject passes the slot on.
+    if (action === "reject") await releaseSlot(reservation.itemId);
 
     const { user, decidedBy, ...rest } = updated;
     res.json({
@@ -474,5 +353,7 @@ router.patch(
 
 export default router;
 export { ALL_STATUSES as RESERVATION_STATUSES };
-export { nextAvailableDate, measureHold };
-export type { Hold };
+// Re-exported so existing consumers keep working now that the engine lives
+// in services/hold.ts (shared with the waitlist service).
+export { nextAvailableDate, measureHold } from "../services/hold";
+export type { Hold } from "../services/hold";

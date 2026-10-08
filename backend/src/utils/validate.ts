@@ -217,3 +217,31 @@ export function endOfDay(d: Date): Date {
 export function prettyDate(d: Date): string {
   return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
 }
+
+/** How far ahead a reservation (or waitlist request) may be placed. */
+export const MAX_AHEAD_DAYS = 180
+
+const DAY_MS = 24 * 60 * 60 * 1000
+
+/**
+ * Calendar rules shared by reservation creation and waitlist joins, so the
+ * two can never drift apart: no past pickup dates, a sane horizon, and a
+ * return day strictly after the pickup day.
+ *
+ * Returns the return day normalized to end-of-day - the shape the database
+ * stores ("due March 2" must not count as overdue the instant March 2 begins).
+ */
+export function assertReservationWindow(pickupDate: Date, returnDay: Date): Date {
+  const today = startOfDay(new Date())
+  if (pickupDate.getTime() < today.getTime()) {
+    throw new ApiError(400, 'Reservation date cannot be in the past')
+  }
+  const horizon = new Date(today.getTime() + MAX_AHEAD_DAYS * DAY_MS)
+  if (pickupDate.getTime() > horizon.getTime()) {
+    throw new ApiError(400, `Reservations can only be made up to ${MAX_AHEAD_DAYS} days in advance`)
+  }
+  if (returnDay.getTime() <= pickupDate.getTime()) {
+    throw new ApiError(400, 'Return date must be after the reservation date')
+  }
+  return endOfDay(returnDay)
+}

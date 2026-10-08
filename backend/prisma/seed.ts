@@ -524,21 +524,21 @@ async function main() {
     });
   }
 
-  // Reservations use date-only pickup dates (local midnight) and an
-  // end-of-day return, matching what routes/reservations.ts stores.
-  if ((await prisma.reservation.count()) === 0) {
-    const pickupIn = (n: number): Date => {
-      const d = new Date()
-      d.setDate(d.getDate() + n)
-      d.setHours(0, 0, 0, 0)
-      return d
-    }
-    const endOfDay = (d: Date): Date => {
-      const c = new Date(d)
-      c.setHours(23, 59, 59, 999)
-      return c
-    }
+  // Reservations and waitlist entries use date-only pickup dates (local
+  // midnight) and an end-of-day return, matching routes/reservations.ts.
+  const pickupIn = (n: number): Date => {
+    const d = new Date()
+    d.setDate(d.getDate() + n)
+    d.setHours(0, 0, 0, 0)
+    return d
+  }
+  const endOfDay = (d: Date): Date => {
+    const c = new Date(d)
+    c.setHours(23, 59, 59, 999)
+    return c
+  }
 
+  if ((await prisma.reservation.count()) === 0) {
     await prisma.reservation.createMany({
       data: [
         {
@@ -615,6 +615,59 @@ async function main() {
           createdAt: days(-2),
         },
       ],
+    });
+  }
+
+  // A two-person queue plus one live 24h offer, so the waitlist, offer
+  // notification and claim flow are all demoable right after seeding.
+  if ((await prisma.waitlistEntry.count()) === 0) {
+    await prisma.waitlistEntry.createMany({
+      data: [
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-4001")!,
+          quantity: 1,
+          wantedDate: pickupIn(4),
+          pickupTime: "14:00",
+          wantedReturn: endOfDay(pickupIn(6)),
+          purpose: "Capstone demo day rehearsal",
+          status: "WAITING",
+          createdAt: days(-3),
+        },
+        {
+          userId: faculty.id,
+          itemId: itemsByCode.get("EQ-4001")!,
+          quantity: 1,
+          wantedDate: pickupIn(5),
+          wantedReturn: endOfDay(pickupIn(7)),
+          purpose: "Departmental accreditation review",
+          status: "WAITING",
+          createdAt: days(-2),
+        },
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-3001")!,
+          quantity: 1,
+          wantedDate: pickupIn(8),
+          pickupTime: "10:00",
+          wantedReturn: endOfDay(pickupIn(10)),
+          purpose: "Student org week film screening",
+          status: "OFFERED",
+          offeredAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+          offerExpiresAt: new Date(Date.now() + 18 * 60 * 60 * 1000),
+          createdAt: days(-4),
+        },
+      ],
+    });
+
+    await prisma.notification.create({
+      data: {
+        userId: student.id,
+        type: "WAITLIST_OFFER",
+        title: "A slot opened up for the HD Projector",
+        body: "Your waitlist window is now held for you. Claim it within 24 hours or the slot passes to the next person in line.",
+        link: "/my-reservations",
+      },
     });
   }
 

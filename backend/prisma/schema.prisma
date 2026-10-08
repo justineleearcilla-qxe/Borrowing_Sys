@@ -50,6 +50,26 @@ enum ReservationStatus {
   COMPLETED
 }
 
+// Lifecycle of a waitlist entry:
+//   WAITING   -> queued in FIFO order (createdAt, id tiebreak) for its window
+//   OFFERED   -> a slot opened up; the entry HOLDS its window for 24 hours
+//   CLAIMED   -> the offer was converted into a PENDING reservation
+//   CANCELLED -> the user left the queue (or left before claiming)
+//   EXPIRED   -> the 24h offer lapsed (or the wanted dates passed unclaimed)
+enum WaitlistStatus {
+  WAITING
+  OFFERED
+  CLAIMED
+  CANCELLED
+  EXPIRED
+}
+
+enum NotificationType {
+  WAITLIST_OFFER
+  WAITLIST_CLAIMED
+  WAITLIST_MISSED
+}
+
 model User {
   id            Int      @id @default(autoincrement())
   name          String
@@ -64,6 +84,8 @@ model User {
   decisions     Loan[]   @relation("DecidedBy")
   reservations  Reservation[]
   reservationDecisions Reservation[] @relation("ReservationDecider")
+  waitlistEntries WaitlistEntry[]
+  notifications Notification[]
 
   @@index([role])
 }
@@ -93,6 +115,7 @@ model Item {
   createdAt         DateTime      @default(now())
   loans             Loan[]
   reservations      Reservation[]
+  waitlistEntries   WaitlistEntry[]
 
   @@index([categoryId])
   @@index([status])
@@ -152,4 +175,49 @@ model Reservation {
   @@index([userId])
   @@index([itemId])
   @@index([reservationDate])
+}
+
+// A spot in line for a future reservation window on one item.
+// FIFO order is createdAt (id tiebreak). An OFFERED entry HOLDS its window
+// for up to 24 hours: measureHold() counts it like a reservation, so nobody
+// else can book that window before the offer is claimed or expires.
+// wantedDate is the PICKUP date (local midnight, date-only) and wantedReturn
+// is the return date, mirroring Reservation.reservationDate / returnDate.
+// reservationId is a plain Int (no FK) the same way Reservation.loanId is.
+model WaitlistEntry {
+  id             Int            @id @default(autoincrement())
+  userId         Int
+  user           User           @relation(fields: [userId], references: [id])
+  itemId         Int
+  item           Item           @relation(fields: [itemId], references: [id])
+  quantity       Int            @default(1)
+  wantedDate     DateTime
+  pickupTime     String?
+  wantedReturn   DateTime
+  purpose        String
+  status         WaitlistStatus @default(WAITING)
+  offeredAt      DateTime?
+  offerExpiresAt DateTime?
+  reservationId  Int?
+  createdAt      DateTime       @default(now())
+
+  @@index([itemId, status])
+  @@index([status, offerExpiresAt])
+  @@index([userId, status])
+}
+
+// In-app notification shown by the bell in the layout.
+// link is an in-app destination such as "/my-reservations" or "/items/12".
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
 }
