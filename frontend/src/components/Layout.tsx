@@ -13,6 +13,7 @@ const mainNav = [
   { to: "/catalog", label: "Browse Equipment", icon: "box" },
   { to: "/my-reservations", label: "My Reservations", icon: "calendar" },
   { to: "/my-loans", label: "My Loans", icon: "clipboard" },
+  { to: "/credits", label: "Borrowing Credits", icon: "chart" },
 ];
 
 // Admins and faculty share the reservation queue; everything else is admin-only.

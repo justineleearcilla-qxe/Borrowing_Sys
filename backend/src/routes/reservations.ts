@@ -5,6 +5,7 @@ import { requireAuth, requireStaff } from "../middleware/auth";
 import { ApiError, asyncHandler } from "../utils/http";
 import { sanitizeUser } from "../utils/serialize";
 import { sendMail } from "../services/mailer";
+import { assertBorrowable } from "../services/credits";
 import { assertSlotFree } from "../services/hold";
 import { releaseSlot } from "../services/waitlist";
 import {
@@ -46,12 +47,7 @@ router.post(
   requireAuth,
   asyncHandler(async (req, res) => {
     const user = req.user!;
-    if (user.isBlacklisted) {
-      throw new ApiError(
-        403,
-        "Your borrowing privileges are suspended due to repeated late returns. Please contact the equipment office.",
-      );
-    }
+    await assertBorrowable(user);
 
     const b = (req.body ?? {}) as Record<string, unknown>;
 

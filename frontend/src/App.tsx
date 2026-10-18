@@ -15,6 +15,7 @@ import Catalog from "./pages/Catalog";
 import ItemDetail from "./pages/ItemDetail";
 import MyLoans from "./pages/MyLoans";
 import MyReservations from "./pages/MyReservations";
+import Credits from "./pages/Credits";
 import AdminRequests from "./pages/admin/Requests";
 import AdminInventory from "./pages/admin/Inventory";
 import AdminReservations from "./pages/admin/Reservations";
@@ -70,6 +71,7 @@ export default function App() {
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="my-loans" element={<MyLoans />} />
               <Route path="my-reservations" element={<MyReservations />} />
+              <Route path="credits" element={<Credits />} />
               <Route element={<RequireStaff />}>
                 <Route
                   path="admin/reservations"

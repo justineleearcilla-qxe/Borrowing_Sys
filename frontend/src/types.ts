@@ -156,3 +156,39 @@ export interface ScanResult {
   item: Item
   openLoans: Loan[]
 }
+
+export type CreditTierKey =
+  | 'full'
+  | 'good'
+  | 'probation'
+  | 'suspended'
+  | 'blacklisted'
+
+/** One band on the 0-100 borrowing-credit ladder (see backend services/credits.ts). */
+export interface CreditTier {
+  key: CreditTierKey
+  min: number
+  max: number
+  label: string
+  tone: 'green' | 'blue' | 'yellow' | 'red' | 'gray'
+  description: string
+  privileges: string[]
+}
+
+export interface CreditsSummary {
+  credits: number
+  penaltyPoints: number
+  isBlacklisted: boolean
+  canBorrow: boolean
+  suspendBelow: number
+  formula: string
+  tier: CreditTier
+  tiers: CreditTier[]
+  stats: {
+    totalLoans: number
+    overdueCount: number
+    returnedLoans: number
+    onTimeReturns: number
+    lateReturns: number
+  }
+}

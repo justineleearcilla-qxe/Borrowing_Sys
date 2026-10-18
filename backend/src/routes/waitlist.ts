@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 import { requireAuth } from "../middleware/auth";
 import { ApiError, asyncHandler } from "../utils/http";
 import { measureHold } from "../services/hold";
+import { assertBorrowable } from "../services/credits";
 import { OFFER_HOURS, notify, releaseSlot } from "../services/waitlist";
 import {
   asDateOnly,
@@ -30,12 +31,7 @@ router.post(
   requireAuth,
   asyncHandler(async (req, res) => {
     const user = req.user!;
-    if (user.isBlacklisted) {
-      throw new ApiError(
-        403,
-        "Your borrowing privileges are suspended due to repeated late returns. Please contact the equipment office.",
-      );
-    }
+    await assertBorrowable(user);
 
     const b = (req.body ?? {}) as Record<string, unknown>;
     const itemId = asInt(b.itemId, "Equipment", { min: 1 })!;
@@ -166,12 +162,7 @@ router.post(
   requireAuth,
   asyncHandler(async (req, res) => {
     const user = req.user!;
-    if (user.isBlacklisted) {
-      throw new ApiError(
-        403,
-        "Your borrowing privileges are suspended due to repeated late returns. Please contact the equipment office.",
-      );
-    }
+    await assertBorrowable(user);
 
     const id = parseId(req.params.id);
     const entry = await prisma.waitlistEntry.findUnique({

@@ -3,6 +3,7 @@ import { Prisma, RequestStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { requireAuth, requireAdmin } from "../middleware/auth";
 import { runMaintenanceSweep } from "../services/cron";
+import { assertBorrowable } from "../services/credits";
 import { sendMail } from "../services/mailer";
 import { releaseSlot } from "../services/waitlist";
 import { ApiError, asyncHandler } from "../utils/http";
@@ -22,12 +23,7 @@ router.post(
   requireAuth,
   asyncHandler(async (req, res) => {
     const user = req.user!;
-    if (user.isBlacklisted) {
-      throw new ApiError(
-        403,
-        "Your borrowing privileges are suspended due to repeated late returns. Please contact the equipment office.",
-      );
-    }
+    await assertBorrowable(user);
 
     const { itemId, quantity, purpose, dateNeeded, returnDate } = (req.body ??
       {}) as Record<string, unknown>;
