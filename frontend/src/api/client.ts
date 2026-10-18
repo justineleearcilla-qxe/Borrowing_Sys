@@ -32,14 +32,35 @@ export function apiErrorMessage(
   error: unknown,
   fallback = "Something went wrong",
 ): string {
+  return apiError(error, fallback).message;
+}
+
+export interface ApiFailure {
+  message: string;
+  /** HTTP status, or null when the request never reached the server. */
+  status: number | null;
+}
+
+/**
+ * Same message resolution as apiErrorMessage, but keeps the status so a
+ * caller can branch on it - ItemDetail only offers the waitlist when the
+ * reservation failed with 409 (dates taken), not on a network blip.
+ */
+export function apiError(
+  error: unknown,
+  fallback = "Something went wrong",
+): ApiFailure {
   if (axios.isAxiosError(error)) {
-    return (
-      (error.response?.data as { message?: string } | undefined)?.message ??
-      error.message ??
-      fallback
-    );
+    const response = error.response;
+    return {
+      message:
+        (response?.data as { message?: string } | undefined)?.message ??
+        error.message ??
+        fallback,
+      status: response?.status ?? null,
+    };
   }
-  return fallback;
+  return { message: fallback, status: null };
 }
 
 export async function downloadFile(

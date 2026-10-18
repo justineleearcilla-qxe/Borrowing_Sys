@@ -1,0 +1,350 @@
+/*
+ * Dark mode.
+ * ---------------------------------------------------------------------------
+ * The UI is built from raw Tailwind utilities ("text-slate-500", "bg-white/60")
+ * spread across ~15 pages and components. Rather than thread a `dark:` variant
+ * through every one of them, the app flips a single `data-theme="dark"` flag on
+ * <html> and this stylesheet re-points the specific utilities and component
+ * classes the design actually uses.
+ *
+ * Rules here are unlayered and always prefixed with `[data-theme='dark']`, so
+ * they win on specificity over the Tailwind/component rules they shadow - but
+ * ONLY while dark mode is on. Light mode is untouched.
+ *
+ * Loaded after index.css from main.tsx.
+ *
+ * Deliberately NOT flipped: text-white, bg-primary-800, bg-primary-900 and the
+ * catalog hero. Those already sit on dark surfaces (sidebar, primary buttons,
+ * hero banner); inverting them would make the primary button text invisible.
+ */
+
+/* Lets native widgets (date pickers, scrollbars) render dark too. */
+[data-theme="dark"] {
+  color-scheme: dark;
+}
+
+/*
+ * Tailwind paints focus-ring offsets white by default, which leaves a pale
+ * halo around every keyboard-focused button/input in dark mode.
+ */
+[data-theme="dark"] .btn,
+[data-theme="dark"] .input {
+  --tw-ring-offset-color: #0b1120;
+}
+
+/* --------------------------------------------------------------- page shell */
+
+[data-theme="dark"] body {
+  background-color: #0b1120;
+  background-image:
+    radial-gradient(
+      circle at 8% 8%,
+      rgba(56, 189, 248, 0.1),
+      transparent 28%
+    ),
+    radial-gradient(
+      circle at 90% 18%,
+      rgba(251, 191, 36, 0.07),
+      transparent 24%
+    ),
+    linear-gradient(135deg, rgba(30, 41, 59, 0.7), transparent 45%),
+    linear-gradient(315deg, rgba(15, 23, 42, 0.9), transparent 42%);
+}
+
+[data-theme="dark"] ::selection {
+  background-color: rgba(251, 191, 36, 0.35);
+  color: #f8fafc;
+}
+
+/*
+ * Preflight paints every border #e5e7eb. Darken the default here so bare
+ * "border-b" / "border-t" elements do not glow, then re-assert the handful of
+ * accent borders further down that this would otherwise flatten.
+ */
+[data-theme="dark"] * {
+  border-color: rgba(148, 163, 184, 0.22);
+}
+
+/* ------------------------------------------------------------------- text */
+
+[data-theme="dark"] .text-slate-900,
+[data-theme="dark"] .text-slate-800,
+[data-theme="dark"] .text-slate-700 {
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .text-slate-600 {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .text-slate-500 {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .text-slate-400 {
+  color: #8593a8;
+}
+
+[data-theme="dark"] .text-slate-300,
+[data-theme="dark"] .text-slate-200 {
+  color: #cbd5e1;
+}
+
+/* Headings, links and stat values: deep blue is unreadable on navy. */
+[data-theme="dark"] .text-primary-800 {
+  color: #93c5fd;
+}
+
+/* ---------------------------------------------------------------- surfaces */
+
+[data-theme="dark"] .bg-white,
+[data-theme="dark"] .bg-white\/50,
+[data-theme="dark"] .bg-white\/60,
+[data-theme="dark"] .bg-white\/70,
+[data-theme="dark"] .bg-white\/80,
+[data-theme="dark"] .bg-white\/90 {
+  background-color: rgba(15, 23, 42, 0.78);
+}
+
+[data-theme="dark"] .bg-slate-50 {
+  background-color: #0f172a;
+}
+
+[data-theme="dark"] .bg-slate-100 {
+  background-color: #1e293b;
+}
+
+[data-theme="dark"] .bg-slate-200 {
+  background-color: #283548;
+}
+
+[data-theme="dark"] .bg-primary-50 {
+  background-color: rgba(30, 58, 138, 0.3);
+}
+
+/* ----------------------------------------------------------------- borders */
+
+[data-theme="dark"] .border-slate-200,
+[data-theme="dark"] .border-slate-300 {
+  border-color: rgba(148, 163, 184, 0.24);
+}
+
+[data-theme="dark"] .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+[data-theme="dark"] .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+  border-color: rgba(148, 163, 184, 0.18);
+}
+
+/* Accents the global border rule above would otherwise flatten. */
+[data-theme="dark"] .border-transparent {
+  border-color: transparent;
+}
+
+[data-theme="dark"] .border-primary-800,
+[data-theme="dark"] .border-primary-700 {
+  border-color: #3b82f6;
+}
+
+[data-theme="dark"] .border-l-primary-400 {
+  border-left-color: #60a5fa;
+}
+
+[data-theme="dark"] .border-l-red-600 {
+  border-left-color: #dc2626;
+}
+
+[data-theme="dark"] .border-l-amber-400 {
+  border-left-color: #fbbf24;
+}
+
+[data-theme="dark"] .border-amber-300 {
+  border-color: #f59e0b;
+}
+
+[data-theme="dark"] .border-red-300 {
+  border-color: #f87171;
+}
+
+[data-theme="dark"] .border-red-600 {
+  border-color: #dc2626;
+}
+
+[data-theme="dark"] .border-emerald-300 {
+  border-color: #34d399;
+}
+
+[data-theme="dark"] .border-emerald-600 {
+  border-color: #059669;
+}
+
+[data-theme="dark"] .border-blue-300 {
+  border-color: #60a5fa;
+}
+
+[data-theme="dark"] .border-transparent {
+  border-color: transparent;
+}
+
+/* -------------------------------------------------- component classes (css) */
+
+[data-theme="dark"] .card {
+  border-color: rgba(148, 163, 184, 0.18);
+  background-color: rgba(15, 23, 42, 0.78);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+[data-theme="dark"] .card-header {
+  border-bottom-color: rgba(148, 163, 184, 0.18);
+}
+
+[data-theme="dark"] .card-title {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .label {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .input {
+  border-color: rgba(148, 163, 184, 0.28);
+  background-color: rgba(2, 6, 23, 0.6);
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .input::placeholder {
+  color: #64748b;
+}
+
+[data-theme="dark"] .input:focus {
+  border-color: #60a5fa;
+  background-color: rgba(2, 6, 23, 0.8);
+}
+
+[data-theme="dark"] .input:disabled {
+  background-color: #1e293b;
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .btn-secondary {
+  border-color: #475569;
+  background-color: #1e293b;
+  color: #e2e8f0;
+}
+
+[data-theme="dark"] .btn-secondary:hover {
+  background-color: #334155;
+}
+
+[data-theme="dark"] .btn-secondary:active {
+  background-color: #1e293b;
+}
+
+[data-theme="dark"] .btn-ghost {
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .btn-ghost:hover {
+  background-color: rgba(148, 163, 184, 0.14);
+}
+
+[data-theme="dark"] .th {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .td {
+  color: #cbd5e1;
+}
+
+/* Empty states and dashed wells. */
+[data-theme="dark"] .border-dashed {
+  border-color: rgba(148, 163, 184, 0.35);
+}
+
+[data-theme="dark"] .text-primary-300 {
+  color: #93c5fd;
+}
+
+/* ---------------------------------------------------------- tinted surfaces */
+
+[data-theme="dark"] .bg-blue-50 {
+  background-color: rgba(30, 58, 138, 0.42);
+}
+
+[data-theme="dark"] .text-blue-900 {
+  color: #bfdbfe;
+}
+
+[data-theme="dark"] .bg-emerald-50 {
+  background-color: rgba(6, 78, 59, 0.42);
+}
+
+[data-theme="dark"] .text-emerald-800 {
+  color: #a7f3d0;
+}
+
+[data-theme="dark"] .bg-red-50 {
+  background-color: rgba(127, 29, 29, 0.42);
+}
+
+[data-theme="dark"] .text-red-800 {
+  color: #fecaca;
+}
+
+[data-theme="dark"] .bg-amber-50 {
+  background-color: rgba(120, 53, 15, 0.42);
+}
+
+[data-theme="dark"] .text-amber-900 {
+  color: #fde68a;
+}
+
+[data-theme="dark"] .text-red-600 {
+  color: #f87171;
+}
+
+[data-theme="dark"] .text-amber-600 {
+  color: #fbbf24;
+}
+
+[data-theme="dark"] .text-emerald-600 {
+  color: #34d399;
+}
+
+/* ------------------------------------------------------------------ badges */
+
+[data-theme="dark"] .badge-gray {
+  border-color: #475569;
+  background-color: #1e293b;
+  color: #cbd5e1;
+}
+
+[data-theme="dark"] .badge-blue {
+  border-color: #1d4ed8;
+  background-color: rgba(30, 64, 175, 0.4);
+  color: #bfdbfe;
+}
+
+[data-theme="dark"] .badge-green {
+  border-color: #047857;
+  background-color: rgba(6, 78, 59, 0.4);
+  color: #a7f3d0;
+}
+
+[data-theme="dark"] .badge-yellow {
+  border-color: #b45309;
+  background-color: rgba(120, 53, 15, 0.45);
+  color: #fde68a;
+}
+
+[data-theme="dark"] .badge-red {
+  border-color: #b91c1c;
+  background-color: rgba(127, 29, 29, 0.45);
+  color: #fecaca;
+}
+
+[data-theme="dark"] .badge-purple {
+  border-color: #6d28d9;
+  background-color: rgba(76, 29, 149, 0.45);
+  color: #ddd6fe;
+}

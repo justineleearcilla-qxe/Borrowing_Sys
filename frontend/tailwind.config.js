@@ -1,5 +1,20 @@
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
+  /*
+   * The Button and Badge components build their class names at runtime
+   * (`btn-${variant}`, `badge-${tone}`), so the scanner never sees the full
+   * class name. Without this safelist Tailwind purges those component rules
+   * from index.css and the buttons/badges render with no background at all.
+   */
+  safelist: [
+    'btn-primary',
+    'btn-danger',
+    'btn-success',
+    'badge-gray',
+    'badge-blue',
+    'badge-green',
+    'badge-purple',
+  ],
   theme: {
     borderRadius: {
       none: '0',

@@ -14,8 +14,11 @@ import Dashboard from "./pages/Dashboard";
 import Catalog from "./pages/Catalog";
 import ItemDetail from "./pages/ItemDetail";
 import MyLoans from "./pages/MyLoans";
+import MyReservations from "./pages/MyReservations";
+import Credits from "./pages/Credits";
 import AdminRequests from "./pages/admin/Requests";
 import AdminInventory from "./pages/admin/Inventory";
+import AdminReservations from "./pages/admin/Reservations";
 import AdminScan from "./pages/admin/Scan";
 import AdminReports from "./pages/admin/Reports";
 
@@ -30,6 +33,15 @@ function RequireAdmin() {
   const { user } = useAuth();
   if (!user) return null;
   if (user.role !== "ADMIN") return <Navigate to="/" replace />;
+  return <Outlet />;
+}
+
+/** Equipment desk: admins AND faculty run the reservation queue. */
+function RequireStaff() {
+  const { user } = useAuth();
+  if (!user) return null;
+  if (user.role !== "ADMIN" && user.role !== "FACULTY")
+    return <Navigate to="/" replace />;
   return <Outlet />;
 }
 
@@ -58,6 +70,14 @@ export default function App() {
             <Route element={<Layout />}>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="my-loans" element={<MyLoans />} />
+              <Route path="my-reservations" element={<MyReservations />} />
+              <Route path="credits" element={<Credits />} />
+              <Route element={<RequireStaff />}>
+                <Route
+                  path="admin/reservations"
+                  element={<AdminReservations />}
+                />
+              </Route>
               <Route element={<RequireAdmin />}>
                 <Route path="admin/requests" element={<AdminRequests />} />
                 <Route path="admin/inventory" element={<AdminInventory />} />

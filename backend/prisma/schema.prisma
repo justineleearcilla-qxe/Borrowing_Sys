@@ -34,6 +34,42 @@ enum RequestStatus {
   OVERDUE
 }
 
+// Lifecycle of an equipment reservation:
+//   PENDING   -> borrower submitted, waiting for a decision
+//   APPROVED  -> staff accepted it, slot is held for the pickup date
+//   REJECTED  -> staff declined it (or it failed conflict re-check on approve)
+//   CANCELLED -> borrower withdrew their own pending request
+//   EXPIRED   -> not picked up within RESERVATION_GRACE_DAYS after the pickup date
+//   COMPLETED -> collected at the desk and converted into a Loan
+enum ReservationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+  EXPIRED
+  COMPLETED
+}
+
+// Lifecycle of a waitlist entry:
+//   WAITING   -> queued in FIFO order (createdAt, id tiebreak) for its window
+//   OFFERED   -> a slot opened up; the entry HOLDS its window for 24 hours
+//   CLAIMED   -> the offer was converted into a PENDING reservation
+//   CANCELLED -> the user left the queue (or left before claiming)
+//   EXPIRED   -> the 24h offer lapsed (or the wanted dates passed unclaimed)
+enum WaitlistStatus {
+  WAITING
+  OFFERED
+  CLAIMED
+  CANCELLED
+  EXPIRED
+}
+
+enum NotificationType {
+  WAITLIST_OFFER
+  WAITLIST_CLAIMED
+  WAITLIST_MISSED
+}
+
 model User {
   id            Int      @id @default(autoincrement())
   name          String
@@ -46,6 +82,10 @@ model User {
   createdAt     DateTime @default(now())
   loans         Loan[]
   decisions     Loan[]   @relation("DecidedBy")
+  reservations  Reservation[]
+  reservationDecisions Reservation[] @relation("ReservationDecider")
+  waitlistEntries WaitlistEntry[]
+  notifications Notification[]
 
   @@index([role])
 }
@@ -74,6 +114,8 @@ model Item {
   imageUrl          String?
   createdAt         DateTime      @default(now())
   loans             Loan[]
+  reservations      Reservation[]
+  waitlistEntries   WaitlistEntry[]
 
   @@index([categoryId])
   @@index([status])
@@ -102,4 +144,80 @@ model Loan {
   @@index([status])
   @@index([userId])
   @@index([itemId])
+}
+
+// A reservation holds a future (or currently-out) item for a borrower.
+// reservationDate is the PICKUP date (stored at local midnight, date-only);
+// pickupTime is the preferred time of day on that date as "HH:MM".
+// returnDate is when it must come back, mirroring Loan.returnDate so the
+// existing overdue cron handles converted reservations unchanged.
+model Reservation {
+  id              Int               @id @default(autoincrement())
+  userId          Int
+  user            User              @relation(fields: [userId], references: [id])
+  itemId          Int
+  item            Item              @relation(fields: [itemId], references: [id])
+  quantity        Int               @default(1)
+  reservationDate DateTime
+  pickupTime      String?
+  returnDate      DateTime
+  purpose         String
+  status          ReservationStatus @default(PENDING)
+  remarks         String?
+  decidedById     Int?
+  decidedBy       User?             @relation("ReservationDecider", fields: [decidedById], references: [id])
+  loanId          Int?
+  pickedUpAt      DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  @@index([status])
+  @@index([userId])
+  @@index([itemId])
+  @@index([reservationDate])
+}
+
+// A spot in line for a future reservation window on one item.
+// FIFO order is createdAt (id tiebreak). An OFFERED entry HOLDS its window
+// for up to 24 hours: measureHold() counts it like a reservation, so nobody
+// else can book that window before the offer is claimed or expires.
+// wantedDate is the PICKUP date (local midnight, date-only) and wantedReturn
+// is the return date, mirroring Reservation.reservationDate / returnDate.
+// reservationId is a plain Int (no FK) the same way Reservation.loanId is.
+model WaitlistEntry {
+  id             Int            @id @default(autoincrement())
+  userId         Int
+  user           User           @relation(fields: [userId], references: [id])
+  itemId         Int
+  item           Item           @relation(fields: [itemId], references: [id])
+  quantity       Int            @default(1)
+  wantedDate     DateTime
+  pickupTime     String?
+  wantedReturn   DateTime
+  purpose        String
+  status         WaitlistStatus @default(WAITING)
+  offeredAt      DateTime?
+  offerExpiresAt DateTime?
+  reservationId  Int?
+  createdAt      DateTime       @default(now())
+
+  @@index([itemId, status])
+  @@index([status, offerExpiresAt])
+  @@index([userId, status])
+}
+
+// In-app notification shown by the bell in the layout.
+// link is an in-app destination such as "/my-reservations" or "/items/12".
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int
+  user      User             @relation(fields: [userId], references: [id])
+  type      NotificationType
+  title     String
+  body      String
+  link      String?
+  readAt    DateTime?
+  createdAt DateTime         @default(now())
+
+  @@index([userId, readAt])
 }
