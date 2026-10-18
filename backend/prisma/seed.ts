@@ -316,45 +316,52 @@ const ITEMS: Array<{
 ];
 
 const IMAGE_URLS: Record<string, string> = {
-  "EQ-1001": "https://loremflickr.com/900/600/volleyball?lock=1001",
+  "EQ-1001":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Beach_volleyball_ball.jpg/960px-Beach_volleyball_ball.jpg",
   "EQ-1002":
-    "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Isolated_basketball.png/960px-Isolated_basketball.png",
   "EQ-1003":
-    "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=900&q=85",
-  "EQ-1004": "https://loremflickr.com/900/600/volleyball,net?lock=1004",
-  "EQ-2001": "https://loremflickr.com/900/600/compound,microscope?lock=2001",
-  "EQ-2002": "https://loremflickr.com/900/600/laboratory,beaker?lock=2002",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/Badminton_Racket.jpg/960px-Badminton_Racket.jpg",
+  "EQ-1004":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Beach_Volleyball_Net%2C_Destin%2C_Florida.jpg/960px-Beach_Volleyball_Net%2C_Destin%2C_Florida.jpg",
+  "EQ-2001":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Binocular_compound_microscope%2C_Carl_Zeiss_Jena%2C_1914_%286779276516%29.jpg/960px-Binocular_compound_microscope%2C_Carl_Zeiss_Jena%2C_1914_%286779276516%29.jpg",
+  "EQ-2002":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Beaker_contains_solution.jpg/960px-Beaker_contains_solution.jpg",
   "EQ-2003":
-    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/2017_Cyfrowy_miernik_uniwersalny.jpg/960px-2017_Cyfrowy_miernik_uniwersalny.jpg",
   "EQ-3001":
-    "https://images.unsplash.com/photo-1626379953822-baec19c3accd?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Another_Shadow_-_video_projector_%26_OptiTrack_camera_-_SIGGRAPH_Asia_2009.jpg/960px-Another_Shadow_-_video_projector_%26_OptiTrack_camera_-_SIGGRAPH_Asia_2009.jpg",
   "EQ-3002":
-    "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/2016_Sony_DSLR-A700.jpg/960px-2016_Sony_DSLR-A700.jpg",
   "EQ-3003":
-    "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Boya_Wireless_Microphone.jpg/960px-Boya_Wireless_Microphone.jpg",
   "EQ-3004":
-    "https://images.unsplash.com/photo-1545454675-96b9d1e5b2e4?auto=format&fit=crop&w=900&q=85",
+    "https://upload.wikimedia.org/wikipedia/commons/2/21/Bass_reflex_loudspeakers_by_Focal-JMLab.jpg",
   "EQ-4001":
-    "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Dell_Inspiron_1525.jpeg/960px-Dell_Inspiron_1525.jpeg",
   "EQ-4002":
-    "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=900&q=85",
-  "EQ-4003": "https://loremflickr.com/900/600/hdmi,cable?lock=4003",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Apple_iPad.jpg/960px-Apple_iPad.jpg",
+  "EQ-4003":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/Adapter_cable_hdmi_dvi-d_IMGP1647_smial_wp.jpg/960px-Adapter_cable_hdmi_dvi-d_IMGP1647_smial_wp.jpg",
   "EQ-4004":
-    "https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/04/2023_Hub_USB_2.0.jpg/960px-2023_Hub_USB_2.0.jpg",
   "EQ-5001":
-    "https://images.unsplash.com/photo-1525201548942-d8732f6617a0?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/00_Walden_Acoustic_Guitar_D310e_01.jpg/960px-00_Walden_Acoustic_Guitar_D310e_01.jpg",
   "EQ-5002":
-    "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&w=900&q=85",
-  "EQ-5003": "https://loremflickr.com/900/600/violin?lock=5003",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Williams_Allegro_2_88-Key_Hammer_Action_Digital_Piano_%282016-06-25_22.01.41_by_Scott_Ritchie%29.jpg/960px-Williams_Allegro_2_88-Key_Hammer_Action_Digital_Piano_%282016-06-25_22.01.41_by_Scott_Ritchie%29.jpg",
+  "EQ-5003":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/Violin_%26_bow.jpg/960px-Violin_%26_bow.jpg",
   "EQ-5004":
-    "https://images.unsplash.com/photo-1460039230329-eb070fc6c77c?auto=format&fit=crop&w=900&q=85",
-  "EQ-6001": "https://loremflickr.com/900/600/folding,table?lock=6001",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/00_Fender_Frontman_15G_guitar_Amplifier.jpg/960px-00_Fender_Frontman_15G_guitar_Amplifier.jpg",
+  "EQ-6001":
+    "https://upload.wikimedia.org/wikipedia/commons/4/41/LifetimeTable.jpg",
   "EQ-6002":
-    "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=900&q=85",
+    "https://upload.wikimedia.org/wikipedia/commons/2/2f/40_4_stack_chair_david_rowland_250.png",
   "EQ-6003":
-    "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/Eufuria_Albany_Capital_Center_main_stage_Mailpup.jpg/960px-Eufuria_Albany_Capital_Center_main_stage_Mailpup.jpg",
   "EQ-6004":
-    "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/A_Frame_Tent_for_Construction_.jpg/960px-A_Frame_Tent_for_Construction_.jpg",
 };
 
 async function main() {
