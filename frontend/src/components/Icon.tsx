@@ -153,6 +153,13 @@ const paths: Record<string, ReactNode> = {
       <path d="M13.73 21a2 2 0 0 1-3.46 0" />
     </>
   ),
+  cart: (
+    <>
+      <path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.2a2 2 0 0 0 2-1.6L21 8H6" />
+      <circle cx="9.5" cy="20" r="1.3" />
+      <circle cx="18" cy="20" r="1.3" />
+    </>
+  ),
 };
 
 export function Icon({

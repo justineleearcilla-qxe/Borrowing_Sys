@@ -141,9 +141,15 @@ model Loan {
   reminderSentAt DateTime?
   createdAt      DateTime      @default(now())
 
+  // Shared id across every Loan created by one multi-item cart checkout.
+  // NULL for ordinary single-item requests. No FK - it only groups rows we
+  // already own and never needs referential integrity of its own.
+  batchId        String?
+
   @@index([status])
   @@index([userId])
   @@index([itemId])
+  @@index([batchId])
 }
 
 // A reservation holds a future (or currently-out) item for a borrower.

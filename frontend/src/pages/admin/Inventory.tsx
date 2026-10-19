@@ -216,7 +216,13 @@ export default function AdminInventory() {
                           <Icon name="qr" className="h-3.5 w-3.5" />
                           QR
                         </Button>
-                        <Button variant="danger" size="sm" onClick={() => remove(item)}>
+                        <Button
+                          variant="danger"
+                          size="sm"
+                          onClick={() => remove(item)}
+                          aria-label={`Delete ${item.name}`}
+                          title="Delete"
+                        >
                           <Icon name="trash" className="h-3.5 w-3.5" />
                         </Button>
                       </div>

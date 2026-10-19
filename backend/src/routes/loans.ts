@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { randomUUID } from "node:crypto";
 import { Prisma, RequestStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { requireAuth, requireAdmin } from "../middleware/auth";
@@ -11,6 +12,9 @@ import { sanitizeUser } from "../utils/serialize";
 import { asAnyDate, asInt, reqStr } from "../utils/validate";
 
 const router = Router();
+
+/** Upper bound on a single cart checkout, to keep one request bounded. */
+const MAX_BATCH_ITEMS = 25;
 
 function parseId(raw: string): number {
   const id = Number(raw);
@@ -67,6 +71,91 @@ router.post(
       include: { item: { include: { category: true } } },
     });
     res.status(201).json(loan);
+  }),
+);
+
+// ---------------------------------------------------------------------------
+// BATCH - one cart checkout: many items, one shared purpose + window.
+// Creates one PENDING Loan per item, stitched together by a shared batchId so
+// the group can be recognised later. All-or-nothing: if any line fails
+// validation the whole submission is rejected and nothing is written.
+// ---------------------------------------------------------------------------
+router.post(
+  "/batch",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const user = req.user!;
+    await assertBorrowable(user);
+
+    const { items, purpose, dateNeeded, returnDate } = (req.body ??
+      {}) as Record<string, unknown>;
+
+    if (!Array.isArray(items) || items.length === 0)
+      throw new ApiError(400, "Add at least one item to your cart");
+    if (items.length > MAX_BATCH_ITEMS)
+      throw new ApiError(400, `A cart can hold at most ${MAX_BATCH_ITEMS} items`);
+
+    const cleanPurpose = reqStr(purpose, "Purpose", { min: 5, max: 300 });
+    const needed = asAnyDate(dateNeeded, "Date needed");
+    const ret = asAnyDate(returnDate, "Return date");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (needed < today)
+      throw new ApiError(400, "Date needed cannot be in the past");
+    if (ret <= needed)
+      throw new ApiError(400, "Return date must be after the date needed");
+
+    // Merge repeated items into one line so a double-add can't slip two rows
+    // past the availability check independently.
+    const wanted = new Map<number, number>();
+    items.forEach((raw, i) => {
+      const entry = (raw ?? {}) as Record<string, unknown>;
+      const itemId = asInt(entry.itemId, `Cart item ${i + 1}`, { min: 1 })!;
+      const qty = asInt(entry.quantity, `Cart item ${i + 1} quantity`, {
+        min: 1,
+        max: 500,
+      })!;
+      wanted.set(itemId, (wanted.get(itemId) ?? 0) + qty);
+    });
+
+    const ids = [...wanted.keys()];
+    const found = await prisma.item.findMany({ where: { id: { in: ids } } });
+    const byId = new Map(found.map((it) => [it.id, it]));
+
+    for (const [id, qty] of wanted) {
+      const item = byId.get(id);
+      if (!item) throw new ApiError(404, `Equipment #${id} was not found`);
+      if (item.status !== "AVAILABLE")
+        throw new ApiError(
+          409,
+          `"${item.name}" is not available for borrowing`,
+        );
+      if (item.availableQuantity < qty)
+        throw new ApiError(
+          409,
+          `Only ${item.availableQuantity} unit(s) of "${item.name}" are available`,
+        );
+    }
+
+    const batchId = randomUUID();
+    const loans = await prisma.$transaction(
+      ids.map((id) =>
+        prisma.loan.create({
+          data: {
+            userId: user.id,
+            itemId: id,
+            quantity: wanted.get(id)!,
+            purpose: cleanPurpose,
+            dateNeeded: needed,
+            returnDate: ret,
+            batchId,
+          },
+          include: { item: { include: { category: true } } },
+        }),
+      ),
+    );
+
+    res.status(201).json({ batchId, count: loans.length, loans });
   }),
 );
 

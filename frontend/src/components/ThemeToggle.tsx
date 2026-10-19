@@ -37,7 +37,7 @@ export function ThemeToggle({
       )}
     >
       <Icon name={dark ? "sun" : "moon"} className="h-4 w-4" />
-      {dark ? "Light" : "Dark"}
+      {variant !== "sidebar" && (dark ? "Light" : "Dark")}
     </button>
   );
 }

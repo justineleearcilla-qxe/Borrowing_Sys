@@ -122,6 +122,10 @@
   background-color: rgba(30, 58, 138, 0.3);
 }
 
+[data-theme="dark"] .bg-primary-50\/40 {
+  background-color: rgba(30, 58, 138, 0.22);
+}
+
 /* ----------------------------------------------------------------- borders */
 
 [data-theme="dark"] .border-slate-200,

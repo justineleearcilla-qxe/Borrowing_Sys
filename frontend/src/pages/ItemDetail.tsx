@@ -4,6 +4,7 @@ import { api, apiError, apiErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import type { Item } from "../types";
 import { conditionTone, formatDate, itemStatusTone, toDateInput } from "../lib/format";
+import { useCart } from "../context/CartContext";
 import {
   Alert,
   Badge,
@@ -18,6 +19,7 @@ import {
   Textarea,
 } from "../components/ui";
 import { CategoryIcon } from "../components/CategoryIcon";
+import { Icon } from "../components/Icon";
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -53,6 +55,7 @@ export default function ItemDetail() {
     tone: "success" | "error";
     text: string;
   } | null>(null);
+  const { add: addToCart, has: inCart } = useCart();
   // Matches MAX_AHEAD_DAYS in routes/reservations.ts so the browser explains
   // the limit before the server has to reject the request.
   const maxPickupDate = toDateInput(
@@ -338,9 +341,24 @@ export default function ItemDetail() {
                       />
                     </Field>
                   </div>
-                  <Button type="submit" className="w-full" disabled={busy}>
-                    {busy ? "Submitting..." : "Submit request"}
-                  </Button>
+                    <Button type="submit" className="w-full" disabled={busy}>
+                      {busy ? "Submitting..." : "Submit request"}
+                    </Button>
+                    {borrowable && !inCart(item.id) && (
+                      <Button
+                        variant="secondary"
+                        className="w-full"
+                        onClick={() => addToCart(item)}
+                      >
+                        <Icon name="cart" className="h-4 w-4" />
+                        Add to cart
+                      </Button>
+                    )}
+                    {borrowable && inCart(item.id) && (
+                      <p className="text-xs text-emerald-700">
+                        This item is already in your cart.
+                      </p>
+                    )}
                   <p className="text-xs text-slate-400">
                     Requests go to the equipment desk for approval. You will be
                     notified of the decision.

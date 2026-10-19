@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { api, apiErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import type { Category, Item } from "../types";
 import { conditionTone, formatDate } from "../lib/format";
 import {
@@ -20,6 +21,7 @@ import { Icon } from "../components/Icon";
 export default function Catalog() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { add: addToCart, has: inCart } = useCart();
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(true);
@@ -309,13 +311,31 @@ export default function Catalog() {
                             </Badge>
                           )}
                         </div>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => navigate(`/items/${item.id}`)}
-                        >
-                          View
-                        </Button>
+                        <div className="flex items-center gap-2">
+                          {user &&
+                            item.status === "AVAILABLE" &&
+                            item.availableQuantity > 0 &&
+                            (inCart(item.id) ? (
+                              <Badge tone="green">In cart</Badge>
+                            ) : (
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => addToCart(item)}
+                                aria-label={`Add ${item.name} to cart`}
+                              >
+                                <Icon name="cart" className="h-4 w-4" />
+                                Add
+                              </Button>
+                            ))}
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => navigate(`/items/${item.id}`)}
+                          >
+                            View
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </Card>

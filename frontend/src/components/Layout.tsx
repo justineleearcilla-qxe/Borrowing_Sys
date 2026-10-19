@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import type { AppNotification } from "../types";
 import { formatDateTime } from "../lib/format";
 import { Icon } from "./Icon";
@@ -115,6 +116,35 @@ function UserPanel() {
         </button>
       </div>
     </div>
+  );
+}
+
+/**
+ * Cart shortcut with a live item count. Two instances exist (sidebar and
+ * mobile header), both reading the same CartContext.
+ */
+function CartButton({ variant }: { variant: "sidebar" | "header" }) {
+  const { count } = useCart();
+  const navigate = useNavigate();
+  const buttonClass =
+    variant === "sidebar"
+      ? "text-slate-300 hover:bg-white/10 hover:text-white"
+      : "text-primary-800 hover:bg-primary-100";
+  return (
+    <button
+      className={`relative rounded-full p-2 transition-colors ${buttonClass}`}
+      onClick={() => navigate("/cart")}
+      aria-label={
+        count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"
+      }
+    >
+      <Icon name="cart" className="h-5 w-5" />
+      {count > 0 && (
+        <span className="absolute right-0.5 top-0.5 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-amber-400 px-1 text-[10px] font-bold leading-none text-primary-950">
+          {count > 9 ? "9+" : count}
+        </span>
+      )}
+    </button>
   );
 }
 
@@ -298,6 +328,7 @@ export default function Layout() {
             </p>
           </div>
           <div className="flex items-center gap-1">
+            <CartButton variant="sidebar" />
             <NotificationBell
               items={notifications}
               onRefresh={refreshNotifications}
@@ -347,6 +378,7 @@ export default function Layout() {
         </button>
         <div className="flex items-center gap-3">
           <span className="font-bold text-primary-800">EquipHub</span>
+          <CartButton variant="header" />
           <NotificationBell
             items={notifications}
             onRefresh={refreshNotifications}

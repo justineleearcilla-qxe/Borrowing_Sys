@@ -68,6 +68,26 @@ export interface Loan {
   returnedAt: string | null
   reminderSentAt: string | null
   createdAt: string
+  /** Shared across every loan from one multi-item cart checkout; null otherwise. */
+  batchId: string | null
+}
+
+/** A line in the client-side cart (persisted to localStorage). */
+export interface CartLine {
+  itemId: number
+  code: string
+  name: string
+  imageUrl: string | null
+  categorySlug: string
+  maxQty: number
+  quantity: number
+}
+
+/** Response of POST /loans/batch - one grouped cart checkout. */
+export interface BatchCheckoutResponse {
+  batchId: string
+  count: number
+  loans: Loan[]
 }
 
 /**

@@ -18,6 +18,9 @@ import {
 import { loanStatusTone } from "../lib/format";
 import { Icon } from "../components/Icon";
 
+/** Remembers a dismissed penalty alert until the penalty count changes. */
+const PENALTY_ALERT_KEY = "equiphub.dismissedPenaltyAlert";
+
 function LoanRows({ loans }: { loans: Loan[] }) {
   if (loans.length === 0) return <EmptyState title="Nothing here yet" />;
   return (
@@ -45,6 +48,17 @@ function LoanRows({ loans }: { loans: Loan[] }) {
 
 function StudentView({ data }: { data: StudentDashboard }) {
   const { user } = useAuth();
+  const [penaltyDismissed, setPenaltyDismissed] = useState(
+    () =>
+      user != null &&
+      localStorage.getItem(PENALTY_ALERT_KEY) === String(user.penaltyPoints),
+  );
+
+  function dismissPenalty() {
+    if (user) localStorage.setItem(PENALTY_ALERT_KEY, String(user.penaltyPoints));
+    setPenaltyDismissed(true);
+  }
+
   return (
     <>
       <PageHeader
@@ -67,14 +81,15 @@ function StudentView({ data }: { data: StudentDashboard }) {
           </Alert>
         </div>
       )}
-      {!user?.isBlacklisted && user && user.penaltyPoints > 0 && (
-        <div className="mb-6">
-          <Alert tone="warning">
-            You have {user.penaltyPoints} penalty point(s) from late returns. 6
-            points will suspend your borrowing privileges.
-          </Alert>
-        </div>
-      )}
+      {!user?.isBlacklisted && user && user.penaltyPoints > 0 &&
+        !penaltyDismissed && (
+          <div className="mb-6">
+            <Alert tone="warning" onDismiss={dismissPenalty}>
+              You have {user.penaltyPoints} penalty point(s) from late returns. 6
+              points will suspend your borrowing privileges.
+            </Alert>
+          </div>
+        )}
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard label="Active Loans" value={data.activeLoans} />
         <StatCard
