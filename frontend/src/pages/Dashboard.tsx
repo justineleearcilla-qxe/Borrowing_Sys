@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { api, apiErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import type { AdminDashboard, Loan, StudentDashboard } from "../types";
-import { formatDate } from "../lib/format";
+import { formatDate, isDueSoon, loanStatusTone } from "../lib/format";
 import {
   Alert,
   Badge,
@@ -15,36 +15,85 @@ import {
   Spinner,
   StatCard,
 } from "../components/ui";
-import { loanStatusTone } from "../lib/format";
 import { Icon } from "../components/Icon";
 
-function LoanRows({ loans }: { loans: Loan[] }) {
+function LoanRows({
+  loans,
+  overdueFirst = false,
+}: {
+  loans: Loan[];
+  overdueFirst?: boolean;
+}) {
   if (loans.length === 0) return <EmptyState title="Nothing here yet" />;
+  const visibleLoans = overdueFirst
+    ? [...loans].sort((a, b) => {
+        if (a.status === "OVERDUE" && b.status !== "OVERDUE") return -1;
+        if (b.status === "OVERDUE" && a.status !== "OVERDUE") return 1;
+        return new Date(a.returnDate).getTime() - new Date(b.returnDate).getTime();
+      })
+    : loans;
   return (
     <div className="divide-y divide-slate-200">
-      {loans.map((l) => (
+      {visibleLoans.map((l) => (
         <div
           key={l.id}
-          className="flex flex-wrap items-center justify-between gap-2 px-4 py-3 sm:px-5"
+          className={`flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5 ${
+            overdueFirst
+              ? `border-l-4 ${
+                  l.status === "OVERDUE"
+                    ? "border-l-red-600"
+                    : "border-l-transparent"
+                }`
+              : ""
+          }`}
         >
           <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-slate-800">
+            <p className="truncate text-base font-semibold text-slate-800">
               {l.item.name}
             </p>
-            <p className="text-xs text-slate-500">
-              Qty {l.quantity} - Needed {formatDate(l.dateNeeded)} - Return{" "}
-              {formatDate(l.returnDate)}
-            </p>
+            {overdueFirst ? (
+              <p className="mt-1 text-xs text-slate-500">
+                Qty {l.quantity} · Needed {formatDate(l.dateNeeded)}
+              </p>
+            ) : (
+              <p className="mt-1 text-xs text-slate-500">
+                Qty {l.quantity} · Return by {formatDate(l.returnDate)}
+              </p>
+            )}
           </div>
-          <Badge tone={loanStatusTone[l.status] as never}>{l.status}</Badge>
+          {overdueFirst ? (
+            <div className="text-right">
+              <p className="text-[11px] font-medium uppercase tracking-wide text-slate-500">
+                {l.status === "OVERDUE" ? "Overdue" : "Due"}
+              </p>
+              <p
+                className={`text-sm font-semibold ${
+                  l.status === "OVERDUE" ? "text-red-700" : "text-slate-800"
+                }`}
+              >
+                {formatDate(l.returnDate)}
+              </p>
+            </div>
+          ) : (
+            <Badge tone={loanStatusTone[l.status] as never}>{l.status}</Badge>
+          )}
         </div>
       ))}
     </div>
   );
 }
 
-function StudentView({ data }: { data: StudentDashboard }) {
+function StudentView({
+  data,
+  loans,
+}: {
+  data: StudentDashboard;
+  loans: Loan[];
+}) {
   const { user } = useAuth();
+  const dueSoonCount = loans.filter((loan) =>
+    isDueSoon(loan.status, loan.returnDate),
+  ).length;
   return (
     <>
       <PageHeader
@@ -75,26 +124,27 @@ function StudentView({ data }: { data: StudentDashboard }) {
           </Alert>
         </div>
       )}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Active Loans" value={data.activeLoans} />
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Active loans" value={data.activeLoans} />
         <StatCard
-          label="Due Soon / Overdue"
-          value={data.dueSoon.length + data.overdueCount}
+          label="Pending"
+          value={loans.filter((loan) => loan.status === "PENDING").length}
           tone={
-            data.dueSoon.length + data.overdueCount > 0 ? "amber" : "default"
+            loans.some((loan) => loan.status === "PENDING")
+              ? "amber"
+              : "default"
           }
         />
         <StatCard
-          label="Overdue"
-          value={data.overdueCount}
-          tone={data.overdueCount > 0 ? "red" : "default"}
+          label="Due soon"
+          value={dueSoonCount}
+          tone={dueSoonCount > 0 ? "amber" : "default"}
         />
-        <StatCard label="Total Requests" value={data.totalRequests} />
       </div>
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader
-            title="Due Soon"
+            title="Upcoming due dates"
             actions={
               <Link to="/my-loans">
                 <Button variant="secondary" size="sm">
@@ -103,7 +153,7 @@ function StudentView({ data }: { data: StudentDashboard }) {
               </Link>
             }
           />
-          <LoanRows loans={data.dueSoon} />
+          <LoanRows loans={data.dueSoon} overdueFirst />
         </Card>
         <Card>
           <CardHeader
@@ -258,22 +308,33 @@ export default function Dashboard() {
   const { user } = useAuth();
   const [studentData, setStudentData] = useState<StudentDashboard | null>(null);
   const [adminData, setAdminData] = useState<AdminDashboard | null>(null);
+  const [studentLoans, setStudentLoans] = useState<Loan[]>([]);
   const [error, setError] = useState("");
 
   useEffect(() => {
     let cancelled = false;
-    api
-      .get<StudentDashboard | AdminDashboard>("/dashboard")
-      .then((res) => {
+    const loansRequest =
+      user?.role === "ADMIN"
+        ? Promise.resolve(null)
+        : api.get<Loan[]>("/loans/mine");
+    Promise.all([
+      api.get<StudentDashboard | AdminDashboard>("/dashboard"),
+      loansRequest,
+    ])
+      .then(([res, loansRes]) => {
         if (cancelled) return;
-        if (res.data.role === "ADMIN") setAdminData(res.data as AdminDashboard);
-        else setStudentData(res.data as StudentDashboard);
+        if (res.data.role === "ADMIN") {
+          setAdminData(res.data as AdminDashboard);
+        } else {
+          setStudentData(res.data as StudentDashboard);
+          setStudentLoans(loansRes?.data ?? []);
+        }
       })
       .catch((e) => !cancelled && setError(apiErrorMessage(e)));
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user?.role]);
 
   if (error) return <Alert tone="error">{error}</Alert>;
   if (!studentData && !adminData)
@@ -286,6 +347,6 @@ export default function Dashboard() {
   return adminData ? (
     <AdminView data={adminData} />
   ) : (
-    <StudentView data={studentData!} />
+    <StudentView data={studentData!} loans={studentLoans} />
   );
 }

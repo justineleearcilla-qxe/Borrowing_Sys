@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Alert, Button, Field, Input } from "../components/ui";
+import { Icon } from "../components/Icon";
 
 export default function Login() {
   const { login } = useAuth();
@@ -26,8 +27,15 @@ export default function Login() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-primary-900 p-4">
-      <div className="w-full max-w-md">
+    <div className="flex min-h-screen flex-col rounded-none bg-primary-900 p-4">
+      <Link
+        to="/"
+        className="mb-5 inline-flex items-center gap-2 self-start border border-white/30 px-3 py-2 text-sm font-semibold text-white hover:bg-white/10"
+      >
+        <Icon name="arrow-left" className="h-4 w-4" />
+        Back to catalog
+      </Link>
+      <div className="my-auto w-full max-w-md self-center">
         <div className="mb-6 text-center">
           <h1 className="text-2xl font-bold text-white">EquipHub</h1>
           <p className="text-sm text-slate-300">

@@ -3,7 +3,7 @@ import { api, apiErrorMessage } from '../../api/client'
 import type { Category, Item } from '../../types'
 import { conditionTone, itemStatusTone } from '../../lib/format'
 import { Alert, Badge, Button, Card, CardHeader, EmptyState, Field, Input, Modal, PageHeader, Select, Spinner, Textarea } from '../../components/ui'
-import { CategoryIcon } from '../../components/CategoryIcon'
+import { ItemImage } from '../../components/ItemImage'
 import { Icon } from '../../components/Icon'
 
 interface FormState {
@@ -168,7 +168,7 @@ export default function AdminInventory() {
             <EmptyState title="No items found" hint="Adjust your search or add a new item." />
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="admin-table-scroll">
             <table className="w-full min-w-[900px]">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
@@ -186,9 +186,13 @@ export default function AdminInventory() {
                   <tr key={item.id}>
                     <td className="td">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center bg-primary-50 text-primary-300">
-                          {item.imageUrl ? <img src={item.imageUrl} alt="" className="h-full w-full object-cover" /> : <CategoryIcon slug={item.category.slug} className="h-5 w-5" />}
-                        </div>
+                        <ItemImage
+                          imageUrl={item.imageUrl}
+                          categorySlug={item.category.slug}
+                          alt=""
+                          className="h-10 w-10 shrink-0"
+                          iconClassName="h-5 w-5"
+                        />
                         <div>
                           <p className="font-semibold text-slate-800">{item.name}</p>
                           <p className="font-mono text-[11px] text-slate-400">{item.code}</p>

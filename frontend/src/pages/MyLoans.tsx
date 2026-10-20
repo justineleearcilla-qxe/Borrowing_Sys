@@ -5,8 +5,6 @@ import type { Loan } from "../types";
 import {
   daysUntil,
   formatDate,
-  isDueSoon,
-  loanStatusTone,
 } from "../lib/format";
 import {
   Alert,
@@ -24,7 +22,7 @@ export default function MyLoans() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [tab, setTab] = useState<"active" | "history">("active");
+  const [tab, setTab] = useState<"active" | "pending" | "history">("active");
   const [cancellingId, setCancellingId] = useState<number | null>(null);
   const [returningId, setReturningId] = useState<number | null>(null);
 
@@ -67,14 +65,22 @@ export default function MyLoans() {
   }
 
   const active = useMemo(
-    () => loans.filter((l) => !["RETURNED", "REJECTED"].includes(l.status)),
+    () =>
+      loans.filter(
+        (l) =>
+          !["PENDING", "RETURNED", "REJECTED"].includes(l.status),
+      ),
+    [loans],
+  );
+  const pending = useMemo(
+    () => loans.filter((l) => l.status === "PENDING"),
     [loans],
   );
   const history = useMemo(
     () => loans.filter((l) => ["RETURNED", "REJECTED"].includes(l.status)),
     [loans],
   );
-  const shown = tab === "active" ? active : history;
+  const shown = tab === "active" ? active : tab === "pending" ? pending : history;
 
   return (
     <>
@@ -100,6 +106,7 @@ export default function MyLoans() {
         {(
           [
             ["active", `Active (${active.length})`],
+            ["pending", `Pending (${pending.length})`],
             ["history", `History (${history.length})`],
           ] as const
         ).map(([key, label]) => (
@@ -121,8 +128,10 @@ export default function MyLoans() {
         <CardHeader
           title={
             tab === "active"
-              ? "Active requests and loans"
-              : "Returned and rejected"
+              ? "Active loans"
+              : tab === "pending"
+                ? "Pending requests"
+                : "Returned and rejected"
           }
         />
         {loading ? (
@@ -132,48 +141,56 @@ export default function MyLoans() {
         ) : shown.length === 0 ? (
           <div className="p-5">
             <EmptyState
-              title={tab === "active" ? "No active loans" : "No history yet"}
+              title={
+                tab === "active"
+                  ? "No active loans"
+                  : tab === "pending"
+                    ? "No pending requests"
+                    : "No history yet"
+              }
               hint="Requests you submit will show up here."
             />
           </div>
         ) : (
           <div className="divide-y divide-slate-200">
             {shown.map((l) => {
-              const due = isDueSoon(l.status, l.returnDate);
               const overdue = l.status === "OVERDUE";
+              const statusTone = {
+                PENDING: "yellow",
+                APPROVED: "blue",
+                REJECTED: "gray",
+                BORROWED: "blue",
+                RETURNED: "gray",
+                OVERDUE: "red",
+              }[l.status] as "yellow" | "blue" | "gray" | "red";
               return (
                 <div
                   key={l.id}
-                  className={`px-4 py-4 sm:px-5 ${overdue ? "border-l-4 border-l-red-600" : due ? "border-l-4 border-l-amber-400" : ""}`}
+                  className={`px-4 py-4 sm:px-5 ${overdue ? "border-l-4 border-l-red-600" : ""}`}
                 >
                   <div className="flex flex-wrap items-start justify-between gap-3">
                     <div className="min-w-0">
                       <Link
                         to={`/items/${l.item.id}`}
-                        className="text-sm font-bold text-slate-800 hover:text-primary-800 hover:underline"
+                        className="text-base font-semibold text-slate-800 hover:text-primary-900 hover:underline"
                       >
                         {l.item.name}
                       </Link>
-                      <span className="ml-2 font-mono text-[11px] text-slate-400">
-                        {l.item.code}
-                      </span>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Quantity: {l.quantity} - Date needed:{" "}
-                        {formatDate(l.dateNeeded)} - Return by:{" "}
-                        <span
-                          className={
-                            overdue
-                              ? "font-bold text-red-600"
-                              : due
-                                ? "font-bold text-amber-600"
-                                : ""
-                          }
-                        >
-                          {formatDate(l.returnDate)}
-                        </span>
+                      <p className="mt-2 text-xs font-medium uppercase tracking-wide text-slate-500">
+                        Due date
+                      </p>
+                      <p
+                        className={`text-sm font-bold ${
+                          overdue ? "text-red-700" : "text-slate-800"
+                        }`}
+                      >
+                        {formatDate(l.returnDate)}
                         {overdue &&
-                          ` (${Math.abs(daysUntil(l.returnDate))} day(s) late)`}
-                        {due && !overdue && " (due soon)"}
+                          ` · ${Math.abs(daysUntil(l.returnDate))} day(s) late`}
+                      </p>
+                      <p className="mt-1 text-xs text-slate-500">
+                        Quantity: {l.quantity} · Date needed:{" "}
+                        {formatDate(l.dateNeeded)}
                       </p>
                       <p className="mt-1 max-w-xl text-xs italic text-slate-500">
                         Purpose: {l.purpose}
@@ -185,7 +202,7 @@ export default function MyLoans() {
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-2">
-                      <Badge tone={loanStatusTone[l.status] as never}>
+                      <Badge tone={statusTone}>
                         {l.status}
                       </Badge>
                       {l.status === "PENDING" && (

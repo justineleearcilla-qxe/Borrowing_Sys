@@ -107,7 +107,7 @@ export default function AdminScan() {
     <>
       <PageHeader title="Scan / Quick Check-out" description="Scan an item QR code or type its code to check items out and in." />
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="space-y-6">
         <Card>
           <CardHeader title="Resolve item" />
           <div className="card-body space-y-4">
@@ -131,8 +131,8 @@ export default function AdminScan() {
               </Button>
             ) : (
               <div className="space-y-2">
-                <div id="qr-reader" className="mx-auto w-full max-w-sm overflow-hidden border border-slate-300 bg-black" />
-                <Button variant="secondary" className="w-full" onClick={() => setScanning(false)}>
+                <div id="qr-reader" className="mx-auto min-h-[360px] w-full max-w-xl overflow-hidden border border-slate-300 bg-slate-100" />
+                <Button variant="secondary" size="md" className="w-full py-3" onClick={() => setScanning(false)}>
                   Stop camera
                 </Button>
               </div>
@@ -151,8 +151,8 @@ export default function AdminScan() {
             ) : (
               <div className="space-y-4">
                 <div className="border border-slate-200 p-3">
-                  <p className="text-sm font-bold text-slate-800">{result.item.name}</p>
-                  <p className="font-mono text-[11px] text-slate-400">{result.item.code}</p>
+                  <p className="text-xl font-semibold text-slate-800">{result.item.name}</p>
+                  <p className="mt-1 font-mono text-xs text-slate-500">{result.item.code}</p>
                   <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
                     <Badge tone={result.item.status === 'AVAILABLE' ? 'green' : 'yellow'}>{result.item.status}</Badge>
                     <span>
@@ -181,25 +181,25 @@ export default function AdminScan() {
                         <div className="flex flex-wrap gap-1.5">
                           {l.status === 'PENDING' && (
                             <>
-                              <Button variant="success" size="sm" disabled={busyId === l.id} onClick={() => approve(l)}>
+                              <Button variant="success" className="px-4 py-3 text-sm" disabled={busyId === l.id} onClick={() => approve(l)}>
                                 Approve
                               </Button>
-                              <Button variant="secondary" size="sm" onClick={() => window.alert('Reject this request from the Requests page to add remarks.')}>
+                              <Button variant="danger" className="px-4 py-3 text-sm" onClick={() => window.alert('Reject this request from the Requests page to add remarks.')}>
                                 Reject
                               </Button>
                             </>
                           )}
                           {l.status === 'APPROVED' && (
-                            <Button size="sm" disabled={busyId === l.id} onClick={() => checkout(l)}>
+                            <Button className="px-4 py-3 text-sm" disabled={busyId === l.id} onClick={() => checkout(l)}>
                               Check out
                             </Button>
                           )}
                           {(l.status === 'BORROWED' || l.status === 'OVERDUE') && (
                             <>
-                              <Button variant="success" size="sm" disabled={busyId === l.id} onClick={() => quickReturn(l)}>
+                              <Button variant="success" className="px-4 py-3 text-sm" disabled={busyId === l.id} onClick={() => quickReturn(l)}>
                                 Check in
                               </Button>
-                              <Button variant="secondary" size="sm" disabled={busyId === l.id} onClick={() => { setReturnLoan(l); setReturnOutcome('OK'); setReturnNote('') }}>
+                              <Button variant="secondary" className="px-4 py-3 text-sm" disabled={busyId === l.id} onClick={() => { setReturnLoan(l); setReturnOutcome('OK'); setReturnNote('') }}>
                                 With damage/loss...
                               </Button>
                             </>

@@ -94,8 +94,8 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen">
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/15 bg-primary-900/90 shadow-2xl backdrop-blur-2xl lg:flex">
-        <div className="border-b border-white/10 px-4 py-5">
+      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-primary-800 bg-primary-900 shadow-sm lg:flex">
+        <div className="border-b border-primary-800 px-4 py-5">
           <p className="text-lg font-bold tracking-tight text-white">
             EquipHub
           </p>
@@ -113,8 +113,8 @@ export default function Layout() {
             className="absolute inset-0 bg-slate-900/60"
             onClick={() => setOpen(false)}
           />
-          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col bg-primary-900/95 shadow-xl backdrop-blur-2xl">
-            <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
+          <aside className="absolute inset-y-0 left-0 flex w-64 flex-col rounded-none bg-primary-900 shadow-xl">
+            <div className="flex items-center justify-between border-b border-primary-800 px-4 py-4">
               <span className="text-lg font-bold text-white">EquipHub</span>
               <button
                 className="text-slate-300 hover:text-white"
@@ -130,7 +130,7 @@ export default function Layout() {
         </div>
       )}
 
-      <header className="sticky top-0 z-30 flex items-center justify-between border-b border-white/70 bg-white/60 px-4 py-3 shadow-sm backdrop-blur-xl lg:hidden">
+      <header className="sticky top-0 z-30 flex items-center justify-between rounded-none border-b border-slate-200 bg-white px-4 py-3 shadow-sm lg:hidden">
         <button
           className="btn btn-secondary btn-sm"
           onClick={() => setOpen(true)}

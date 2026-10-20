@@ -28,8 +28,8 @@ export const loanStatusTone: Record<string, string> = {
   PENDING: 'yellow',
   APPROVED: 'blue',
   REJECTED: 'gray',
-  BORROWED: 'purple',
-  RETURNED: 'green',
+  BORROWED: 'blue',
+  RETURNED: 'gray',
   OVERDUE: 'red',
 }
 

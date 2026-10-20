@@ -126,7 +126,7 @@ export default function AdminReports() {
               <EmptyState title="No borrow data yet" />
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="admin-table-scroll">
               <table className="w-full min-w-[640px]">
                 <thead className="border-b border-slate-200 bg-slate-50">
                   <tr>
@@ -162,7 +162,7 @@ export default function AdminReports() {
               <EmptyState title="No borrow data yet" />
             </div>
           ) : (
-            <div className="overflow-x-auto">
+            <div className="admin-table-scroll">
               <table className="w-full min-w-[480px]">
                 <thead className="border-b border-slate-200 bg-slate-50">
                   <tr>
@@ -194,7 +194,7 @@ export default function AdminReports() {
           ) : (
             <div className="card-body space-y-6">
               {damageLoss.incidents.length > 0 && (
-                <div className="overflow-x-auto">
+                <div className="admin-table-scroll">
                   <p className="mb-2 text-xs font-bold uppercase tracking-wide text-slate-500">Incidents</p>
                   <table className="w-full min-w-[640px]">
                     <thead className="border-b border-slate-200 bg-slate-50">

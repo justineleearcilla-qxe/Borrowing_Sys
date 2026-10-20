@@ -1,11 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { api, apiErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import type { Category, Item } from "../types";
-import { conditionTone } from "../lib/format";
 import {
-  Badge,
   Button,
   Card,
   EmptyState,
@@ -16,9 +14,17 @@ import {
 } from "../components/ui";
 import { CategoryIcon } from "../components/CategoryIcon";
 import { Icon } from "../components/Icon";
+import { ItemImage } from "../components/ItemImage";
+
+function isAvailable(item: Item) {
+  return (
+    item.status === "AVAILABLE" &&
+    item.condition !== "DAMAGED" &&
+    item.availableQuantity > 0
+  );
+}
 
 export default function Catalog() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const [categories, setCategories] = useState<Category[]>([]);
   const [items, setItems] = useState<Item[]>([]);
@@ -57,7 +63,7 @@ export default function Catalog() {
         if (department && i.department !== department) return false;
         if (
           availableOnly &&
-          !(i.status === "AVAILABLE" && i.availableQuantity > 0)
+          !isAvailable(i)
         )
           return false;
         if (q) {
@@ -83,7 +89,7 @@ export default function Catalog() {
   if (error) return <p className="text-sm text-red-600">{error}</p>;
 
   const availableCount = items.filter(
-    (item) => item.status === "AVAILABLE" && item.availableQuantity > 0,
+    isAvailable,
   ).length;
   const totalUnits = items.reduce((sum, item) => sum + item.totalQuantity, 0);
 
@@ -91,8 +97,8 @@ export default function Catalog() {
     <>
       <section className="catalog-hero mb-8 overflow-hidden p-6 text-white shadow-sm sm:p-9">
         <div className="relative z-10 max-w-3xl">
-          <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-cyan-200">
-            <span className="h-2 w-2 bg-amber-300" /> Campus equipment desk
+          <div className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-300">
+            Campus equipment desk
           </div>
           <h1 className="max-w-2xl text-3xl font-bold leading-tight tracking-tight sm:text-5xl">
             The right gear for your next class, project, or event.
@@ -105,13 +111,13 @@ export default function Catalog() {
           <div className="mt-6 flex flex-wrap items-center gap-3">
             {user ? (
               <Link to="/dashboard">
-                <Button className="border-amber-300 bg-amber-300 text-primary-950 hover:bg-amber-200">
+                <Button>
                   Open my dashboard
                 </Button>
               </Link>
             ) : (
               <Link to="/login">
-                <Button className="border-amber-300 bg-amber-300 text-primary-950 hover:bg-amber-200">
+                <Button>
                   Sign in to borrow
                 </Button>
               </Link>
@@ -159,165 +165,142 @@ export default function Catalog() {
 
       <PageHeader
         title="Browse the collection"
-        description="Search by name or code, filter by department, and check live availability."
+        description="Search equipment, filter by category, and check availability."
       />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[260px,1fr]">
-        <aside className="space-y-2">
+      <Card className="mb-4 p-4">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <div className="relative">
+            <Icon
+              name="search"
+              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
+            />
+            <Input
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
+              placeholder="Search equipment..."
+              className="pl-9"
+            />
+          </div>
+          <Select
+            value={department}
+            onChange={(e) => setDepartment(e.target.value)}
+            aria-label="Filter by department"
+          >
+            <option value="">All departments</option>
+            {departments.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </Select>
+        </div>
+        <div className="mt-4 flex flex-wrap gap-2" aria-label="Filter by category">
           <button
+            type="button"
             onClick={() => setCategoryId(null)}
-            className={`flex w-full items-center justify-between border px-4 py-3 text-left text-sm font-semibold transition-colors ${
+            aria-pressed={categoryId === null}
+            className={`border px-3 py-2 text-xs font-semibold transition-colors ${
               categoryId === null
-                ? "border-primary-800 bg-primary-800 text-white"
-                : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+                ? "border-primary-900 bg-primary-900 text-white"
+                : "border-slate-300 bg-white text-slate-600 hover:border-primary-900 hover:text-primary-900"
             }`}
           >
-            All Categories
-            <span
-              className={
-                categoryId === null ? "text-slate-300" : "text-slate-400"
-              }
-            >
-              {items.length}
-            </span>
+            All categories
           </button>
-          {categories.map((c) => (
+          {categories.map((category) => (
             <button
-              key={c.id}
-              onClick={() => setCategoryId(c.id)}
-              className={`flex w-full items-center gap-3 border px-4 py-3 text-left transition-colors ${
-                categoryId === c.id
-                  ? "border-primary-800 bg-primary-800 text-white"
-                  : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+              key={category.id}
+              type="button"
+              onClick={() => setCategoryId(category.id)}
+              aria-pressed={categoryId === category.id}
+              className={`flex items-center gap-2 border px-3 py-2 text-xs font-semibold transition-colors ${
+                categoryId === category.id
+                  ? "border-primary-900 bg-primary-900 text-white"
+                  : "border-slate-300 bg-white text-slate-600 hover:border-primary-900 hover:text-primary-900"
               }`}
             >
-              <CategoryIcon slug={c.slug} className="h-5 w-5 shrink-0" />
-              <span className="min-w-0 flex-1 truncate text-sm font-semibold">
-                {c.name}
-              </span>
-              <span
-                className={
-                  categoryId === c.id ? "text-slate-300" : "text-slate-400"
-                }
-              >
-                {c.itemCount}
-              </span>
+              <CategoryIcon slug={category.slug} className="h-4 w-4" />
+              {category.name}
             </button>
           ))}
-        </aside>
-
-        <div>
-          <Card className="mb-4 p-4">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="relative">
-                <Icon
-                  name="search"
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                />
-                <Input
-                  value={q}
-                  onChange={(e) => setQ(e.target.value)}
-                  placeholder="Search name or code..."
-                  className="pl-9"
-                />
-              </div>
-              <Select
-                value={department}
-                onChange={(e) => setDepartment(e.target.value)}
-              >
-                <option value="">All departments</option>
-                {departments.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </Select>
-              <label className="flex cursor-pointer items-center gap-2 px-1 text-sm font-medium text-slate-600">
-                <input
-                  type="checkbox"
-                  checked={availableOnly}
-                  onChange={(e) => setAvailableOnly(e.target.checked)}
-                  className="h-4 w-4 accent-primary-800"
-                />
-                Available now only
-              </label>
-              <p className="self-center text-right text-xs text-slate-400 sm:text-left">
-                {filtered.length} item(s) found
-              </p>
-            </div>
-          </Card>
-
-          {filtered.length === 0 ? (
-            <EmptyState
-              title="No equipment matches your filters"
-              hint="Try clearing the search or filters."
-            />
-          ) : (
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {filtered.map((item, index) => {
-                const out =
-                  item.availableQuantity === 0 || item.status !== "AVAILABLE";
-                return (
-                  <Card
-                    key={item.id}
-                    className="catalog-item group flex flex-col"
-                    style={{ animationDelay: `${index * 45}ms` }}
-                  >
-                    <div
-                      className={`flex h-36 items-center justify-center overflow-hidden ${out ? "bg-slate-100" : "bg-primary-50"} text-primary-300`}
-                    >
-                      {item.imageUrl ? (
-                        <img
-                          src={item.imageUrl}
-                          alt={item.name}
-                          className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105"
-                        />
-                      ) : (
-                        <CategoryIcon
-                          slug={item.category.slug}
-                          className="h-14 w-14"
-                        />
-                      )}
-                    </div>
-                    <div className="flex flex-1 flex-col gap-2 p-4">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0">
-                          <p className="truncate text-sm font-bold text-slate-800">
-                            {item.name}
-                          </p>
-                          <p className="font-mono text-[11px] text-slate-400">
-                            {item.code}
-                          </p>
-                        </div>
-                        <Badge tone={conditionTone[item.condition] as never}>
-                          {item.condition}
-                        </Badge>
-                      </div>
-                      <p className="text-xs text-slate-500">
-                        {item.category.name}
-                        {item.department ? ` - ${item.department}` : ""}
-                      </p>
-                      <div className="mt-auto flex items-center justify-between pt-2">
-                        <Badge tone={out ? "red" : "green"}>
-                          {item.status === "AVAILABLE"
-                            ? `${item.availableQuantity} of ${item.totalQuantity} available`
-                            : item.status}
-                        </Badge>
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          onClick={() => navigate(`/items/${item.id}`)}
-                        >
-                          View
-                        </Button>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              })}
-            </div>
-          )}
         </div>
-      </div>
+        <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-slate-200 pt-3">
+          <label className="flex cursor-pointer items-center gap-2 text-sm font-medium text-slate-600">
+            <input
+              type="checkbox"
+              checked={availableOnly}
+              onChange={(e) => setAvailableOnly(e.target.checked)}
+              className="h-4 w-4 accent-primary-900"
+            />
+            Available only
+          </label>
+          <p className="text-xs text-slate-500">{filtered.length} item(s)</p>
+        </div>
+      </Card>
+
+      {filtered.length === 0 ? (
+        <EmptyState
+          title="No equipment matches your filters"
+          hint="Try clearing the search or filters."
+        />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
+          {filtered.map((item, index) => {
+            const available = isAvailable(item);
+            const lowStock =
+              available &&
+              (item.availableQuantity < 5 ||
+                (item.totalQuantity > 0 &&
+                  item.availableQuantity / item.totalQuantity <= 0.2));
+            const availability = !available
+              ? "Unavailable"
+              : lowStock
+                ? `Only ${item.availableQuantity} left`
+                : `${item.availableQuantity} available`;
+            return (
+              <Link
+                key={item.id}
+                to={`/items/${item.id}`}
+                className="catalog-item group flex min-h-full flex-col border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-900"
+                style={{ animationDelay: `${index * 45}ms` }}
+              >
+                <ItemImage
+                  imageUrl={item.imageUrl}
+                  categorySlug={item.category.slug}
+                  alt={item.name}
+                  className="aspect-[4/3] w-full"
+                  iconClassName="h-14 w-14"
+                />
+                <div className="flex flex-1 flex-col p-4">
+                  <h2 className="line-clamp-2 min-h-12 text-base font-semibold text-slate-800">
+                    {item.name}
+                  </h2>
+                  <p className="mt-1 min-h-5 truncate text-xs text-slate-500">
+                    {item.category.name}
+                  </p>
+                  <p
+                    className={`mt-auto pt-4 text-sm font-medium ${
+                      !available
+                        ? "text-slate-500"
+                        : lowStock
+                          ? "text-amber-700"
+                          : "text-green-700"
+                    }`}
+                  >
+                    {availability}
+                  </p>
+                  {user?.role === "ADMIN" && (
+                    <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-2 text-xs text-slate-500">
+                      <span className="font-mono">{item.code}</span>
+                      <span>{item.condition}</span>
+                    </div>
+                  )}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
     </>
   );
 }

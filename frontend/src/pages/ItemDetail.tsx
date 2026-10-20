@@ -3,10 +3,9 @@ import { Link, useParams } from "react-router-dom";
 import { api, apiErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import type { Item } from "../types";
-import { conditionTone, itemStatusTone, toDateInput } from "../lib/format";
+import { toDateInput } from "../lib/format";
 import {
   Alert,
-  Badge,
   Button,
   Card,
   CardHeader,
@@ -17,7 +16,7 @@ import {
   Spinner,
   Textarea,
 } from "../components/ui";
-import { CategoryIcon } from "../components/CategoryIcon";
+import { ItemImage } from "../components/ItemImage";
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -52,6 +51,7 @@ export default function ItemDetail() {
       Boolean(user) &&
       !user?.isBlacklisted &&
       item?.status === "AVAILABLE" &&
+      item?.condition !== "DAMAGED" &&
       (item?.availableQuantity ?? 0) > 0,
     [user, item],
   );
@@ -91,13 +91,20 @@ export default function ItemDetail() {
       </div>
     );
 
-  const specs: Array<[string, string]> = [
-    ["Item code", item.code],
-    ["Category", item.category.name],
-    ["Department", item.department ?? "-"],
-    ["Total quantity", String(item.totalQuantity)],
-    ["Available", String(item.availableQuantity)],
-  ];
+  const available =
+    item.status === "AVAILABLE" &&
+    item.condition !== "DAMAGED" &&
+    item.availableQuantity > 0;
+  const lowStock =
+    available &&
+    (item.availableQuantity < 5 ||
+      (item.totalQuantity > 0 &&
+        item.availableQuantity / item.totalQuantity <= 0.2));
+  const availability = !available
+    ? "Unavailable"
+    : lowStock
+      ? `Only ${item.availableQuantity} left`
+      : `${item.availableQuantity} available`;
 
   return (
     <>
@@ -110,48 +117,70 @@ export default function ItemDetail() {
           </Link>
         }
       />
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <Card>
-          <div
-            className={`flex h-56 items-center justify-center ${item.availableQuantity === 0 ? "bg-slate-100" : "bg-primary-50"} text-primary-300`}
-          >
-            {item.imageUrl ? (
-              <img
-                src={item.imageUrl}
-                alt={item.name}
-                className="h-full w-full object-cover"
-              />
-            ) : (
-              <CategoryIcon slug={item.category.slug} className="h-20 w-20" />
-            )}
-          </div>
-          <div className="p-4 sm:p-5">
-            <div className="mb-4 flex flex-wrap gap-2">
-              <Badge tone={itemStatusTone[item.status] as never}>
-                {item.status}
-              </Badge>
-              <Badge tone={conditionTone[item.condition] as never}>
-                Condition: {item.condition}
-              </Badge>
-              {item.status === "AVAILABLE" && (
-                <Badge tone={item.availableQuantity > 0 ? "green" : "red"}>
-                  {item.availableQuantity > 0
-                    ? `${item.availableQuantity} available`
-                    : "Fully borrowed"}
-                </Badge>
-              )}
+      <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-2">
+        <Card className="overflow-hidden">
+          <ItemImage
+            imageUrl={item.imageUrl}
+            categorySlug={item.category.slug}
+            alt={item.name}
+            className="aspect-[4/3] w-full"
+            iconClassName="h-20 w-20"
+          />
+          <div className="space-y-4 p-4 sm:p-5">
+            <div>
+              <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
+                Availability
+              </p>
+              <p
+                className={`mt-1 text-sm font-medium ${
+                  !available
+                    ? "text-slate-500"
+                    : lowStock
+                      ? "text-amber-700"
+                      : "text-green-700"
+                }`}
+              >
+                {availability}
+              </p>
             </div>
-            <dl className="divide-y divide-slate-200 border border-slate-200">
-              {specs.map(([k, v]) => (
-                <div
-                  key={k}
-                  className="flex justify-between gap-4 px-3 py-2 text-sm"
-                >
-                  <dt className="font-semibold text-slate-500">{k}</dt>
-                  <dd className="text-right text-slate-800">{v}</dd>
-                </div>
-              ))}
-            </dl>
+            <div className="grid grid-cols-2 gap-3 border-t border-slate-200 pt-4 text-sm">
+              <div>
+                <p className="text-xs text-slate-500">Category</p>
+                <p className="mt-1 font-medium text-slate-800">
+                  {item.category.name}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-500">Total quantity</p>
+                <p className="mt-1 font-medium text-slate-800">
+                  {item.totalQuantity}
+                </p>
+              </div>
+            </div>
+            {user?.role === "ADMIN" && (
+              <details className="border-t border-slate-200 pt-3">
+                <summary className="cursor-pointer text-xs font-semibold text-slate-600">
+                  Admin item details
+                </summary>
+                <dl className="mt-3 divide-y divide-slate-200 border border-slate-200">
+                  {[
+                    ["Item code", item.code],
+                    ["Condition", item.condition],
+                    ["Status", item.status],
+                    ["Department", item.department ?? "-"],
+                    ["Available quantity", String(item.availableQuantity)],
+                  ].map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="flex justify-between gap-4 px-3 py-2 text-xs"
+                    >
+                      <dt className="font-semibold text-slate-500">{label}</dt>
+                      <dd className="text-right text-slate-800">{value}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </details>
+            )}
           </div>
         </Card>
 
@@ -159,14 +188,9 @@ export default function ItemDetail() {
           <CardHeader title="Borrow Request" />
           <div className="card-body space-y-4">
             {!user && (
-              <>
-                <Alert tone="info">
-                  Please sign in to submit a borrow request.
-                </Alert>
-                <Link to="/login" className="inline-block">
-                  <Button>Sign in to borrow</Button>
-                </Link>
-              </>
+              <Link to="/login" className="inline-block">
+                <Button>Log in to request</Button>
+              </Link>
             )}
             {user?.isBlacklisted && (
               <Alert tone="error">

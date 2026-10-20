@@ -105,7 +105,7 @@ export default function AdminRequests() {
             <EmptyState title="No requests in this view" />
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="admin-table-scroll">
             <table className="w-full min-w-[900px]">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>

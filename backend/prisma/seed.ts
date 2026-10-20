@@ -316,14 +316,14 @@ const ITEMS: Array<{
 ];
 
 const IMAGE_URLS: Record<string, string> = {
-  "EQ-1001": "https://loremflickr.com/900/600/volleyball?lock=1001",
+  "EQ-1001": "/images/eq-1001-volleyball.jpg",
   "EQ-1002":
     "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=900&q=85",
   "EQ-1003":
     "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=900&q=85",
-  "EQ-1004": "https://loremflickr.com/900/600/volleyball,net?lock=1004",
-  "EQ-2001": "https://loremflickr.com/900/600/compound,microscope?lock=2001",
-  "EQ-2002": "https://loremflickr.com/900/600/laboratory,beaker?lock=2002",
+  "EQ-1004": "/images/eq-1004-volleyball-net.jpg",
+  "EQ-2001": "/images/eq-2001-compound-microscope.jpg",
+  "EQ-2002": "/images/eq-2002-beaker-set.jpg",
   "EQ-2003":
     "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=85",
   "EQ-3001":
@@ -332,23 +332,22 @@ const IMAGE_URLS: Record<string, string> = {
     "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=85",
   "EQ-3003":
     "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=900&q=85",
-  "EQ-3004":
-    "https://images.unsplash.com/photo-1545454675-96b9d1e5b2e4?auto=format&fit=crop&w=900&q=85",
+  "EQ-3004": "/images/eq-3004-pa-speaker.jpg",
   "EQ-4001":
     "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=85",
   "EQ-4002":
     "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=900&q=85",
-  "EQ-4003": "https://loremflickr.com/900/600/hdmi,cable?lock=4003",
+  "EQ-4003": "/images/eq-4003-hdmi-cable.jpg",
   "EQ-4004":
     "https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=900&q=85",
   "EQ-5001":
     "https://images.unsplash.com/photo-1525201548942-d8732f6617a0?auto=format&fit=crop&w=900&q=85",
   "EQ-5002":
     "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&w=900&q=85",
-  "EQ-5003": "https://loremflickr.com/900/600/violin?lock=5003",
+  "EQ-5003": "/images/eq-5003-violin.jpg",
   "EQ-5004":
     "https://images.unsplash.com/photo-1460039230329-eb070fc6c77c?auto=format&fit=crop&w=900&q=85",
-  "EQ-6001": "https://loremflickr.com/900/600/folding,table?lock=6001",
+  "EQ-6001": "/images/eq-6001-folding-table.jpg",
   "EQ-6002":
     "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=900&q=85",
   "EQ-6003":

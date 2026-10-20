@@ -130,7 +130,7 @@ export function Alert({
   children: ReactNode;
 }) {
   const tones = {
-    info: "border-blue-300 bg-blue-50 text-blue-900",
+    info: "border-primary-200 bg-primary-50 text-primary-900",
     success: "border-emerald-300 bg-emerald-50 text-emerald-800",
     error: "border-red-300 bg-red-50 text-red-800",
     warning: "border-amber-300 bg-amber-50 text-amber-900",
@@ -253,7 +253,7 @@ export function StatCard({
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </p>
-      <p className={clsx("mt-1 text-3xl font-bold tabular-nums", tones[tone])}>
+      <p className={clsx("mt-1 text-2xl font-bold tabular-nums", tones[tone])}>
         {value}
       </p>
       {hint && <p className="mt-1 text-xs text-slate-400">{hint}</p>}
@@ -273,7 +273,7 @@ export function PageHeader({
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
       <div>
-        <h1 className="text-xl font-bold text-slate-900 sm:text-2xl">
+        <h1 className="text-2xl font-bold text-slate-900 sm:text-[28px]">
           {title}
         </h1>
         {description && (
