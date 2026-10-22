@@ -7,6 +7,7 @@ import {
   TextareaHTMLAttributes,
 } from "react";
 import clsx from "clsx";
+import { Icon } from "./Icon";
 
 type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "ghost";
 
@@ -125,9 +126,11 @@ export function Field({
 export function Alert({
   tone = "info",
   children,
+  onDismiss,
 }: {
   tone?: "info" | "success" | "error" | "warning";
   children: ReactNode;
+  onDismiss?: () => void;
 }) {
   const tones = {
     info: "border-primary-200 bg-primary-50 text-primary-900",
@@ -136,8 +139,23 @@ export function Alert({
     warning: "border-amber-300 bg-amber-50 text-amber-900",
   } as const;
   return (
-    <div className={clsx("border px-4 py-3 text-sm font-medium", tones[tone])}>
-      {children}
+    <div
+      className={clsx(
+        "flex items-start justify-between gap-3 border px-4 py-3 text-sm font-medium",
+        tones[tone],
+      )}
+    >
+      <div className="min-w-0">{children}</div>
+      {onDismiss && (
+        <button
+          type="button"
+          onClick={onDismiss}
+          aria-label="Dismiss"
+          className="-mr-1 -mt-0.5 shrink-0 rounded p-0.5 opacity-70 transition-opacity hover:opacity-100"
+        >
+          <Icon name="close" className="h-4 w-4" />
+        </button>
+      )}
     </div>
   );
 }

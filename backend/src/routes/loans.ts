@@ -1,13 +1,20 @@
 import { Router } from "express";
+import { randomUUID } from "node:crypto";
 import { Prisma, RequestStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 import { requireAuth, requireAdmin } from "../middleware/auth";
 import { runMaintenanceSweep } from "../services/cron";
+import { assertBorrowable } from "../services/credits";
 import { sendMail } from "../services/mailer";
+import { releaseSlot } from "../services/waitlist";
 import { ApiError, asyncHandler } from "../utils/http";
 import { sanitizeUser } from "../utils/serialize";
+import { asAnyDate, asInt, reqStr } from "../utils/validate";
 
 const router = Router();
+
+/** Upper bound on a single cart checkout, to keep one request bounded. */
+const MAX_BATCH_ITEMS = 25;
 
 function parseId(raw: string): number {
   const id = Number(raw);
@@ -20,28 +27,19 @@ router.post(
   requireAuth,
   asyncHandler(async (req, res) => {
     const user = req.user!;
-    if (user.isBlacklisted) {
-      throw new ApiError(
-        403,
-        "Your borrowing privileges are suspended due to repeated late returns. Please contact the equipment office.",
-      );
-    }
+    await assertBorrowable(user);
 
     const { itemId, quantity, purpose, dateNeeded, returnDate } = (req.body ??
       {}) as Record<string, unknown>;
-    const qty = Number(quantity);
-    if (!itemId || !Number.isInteger(qty) || qty < 1)
-      throw new ApiError(400, "A valid item and quantity are required");
-    if (!purpose || String(purpose).trim().length < 5)
-      throw new ApiError(
-        400,
-        "Please describe the purpose (at least 5 characters)",
-      );
 
-    const needed = new Date(String(dateNeeded));
-    const ret = new Date(String(returnDate));
-    if (isNaN(needed.getTime()) || isNaN(ret.getTime()))
-      throw new ApiError(400, "Valid dates are required");
+    // Typed + range-checked up front. `Number("abc")` used to reach here as
+    // NaN and later hit Prisma with a malformed id => HTTP 500.
+    const requestedItemId = asInt(itemId, "Equipment", { min: 1 })!;
+    const qty = asInt(quantity, "Quantity", { min: 1, max: 500 })!;
+    const cleanPurpose = reqStr(purpose, "Purpose", { min: 5, max: 300 });
+
+    const needed = asAnyDate(dateNeeded, "Date needed");
+    const ret = asAnyDate(returnDate, "Return date");
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     if (needed < today)
@@ -50,7 +48,7 @@ router.post(
       throw new ApiError(400, "Return date must be after the date needed");
 
     const item = await prisma.item.findUnique({
-      where: { id: Number(itemId) },
+      where: { id: requestedItemId },
     });
     if (!item) throw new ApiError(404, "Item not found");
     if (item.status !== "AVAILABLE")
@@ -66,13 +64,98 @@ router.post(
         userId: user.id,
         itemId: item.id,
         quantity: qty,
-        purpose: String(purpose).trim(),
+        purpose: cleanPurpose,
         dateNeeded: needed,
         returnDate: ret,
       },
       include: { item: { include: { category: true } } },
     });
     res.status(201).json(loan);
+  }),
+);
+
+// ---------------------------------------------------------------------------
+// BATCH - one cart checkout: many items, one shared purpose + window.
+// Creates one PENDING Loan per item, stitched together by a shared batchId so
+// the group can be recognised later. All-or-nothing: if any line fails
+// validation the whole submission is rejected and nothing is written.
+// ---------------------------------------------------------------------------
+router.post(
+  "/batch",
+  requireAuth,
+  asyncHandler(async (req, res) => {
+    const user = req.user!;
+    await assertBorrowable(user);
+
+    const { items, purpose, dateNeeded, returnDate } = (req.body ??
+      {}) as Record<string, unknown>;
+
+    if (!Array.isArray(items) || items.length === 0)
+      throw new ApiError(400, "Add at least one item to your cart");
+    if (items.length > MAX_BATCH_ITEMS)
+      throw new ApiError(400, `A cart can hold at most ${MAX_BATCH_ITEMS} items`);
+
+    const cleanPurpose = reqStr(purpose, "Purpose", { min: 5, max: 300 });
+    const needed = asAnyDate(dateNeeded, "Date needed");
+    const ret = asAnyDate(returnDate, "Return date");
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    if (needed < today)
+      throw new ApiError(400, "Date needed cannot be in the past");
+    if (ret <= needed)
+      throw new ApiError(400, "Return date must be after the date needed");
+
+    // Merge repeated items into one line so a double-add can't slip two rows
+    // past the availability check independently.
+    const wanted = new Map<number, number>();
+    items.forEach((raw, i) => {
+      const entry = (raw ?? {}) as Record<string, unknown>;
+      const itemId = asInt(entry.itemId, `Cart item ${i + 1}`, { min: 1 })!;
+      const qty = asInt(entry.quantity, `Cart item ${i + 1} quantity`, {
+        min: 1,
+        max: 500,
+      })!;
+      wanted.set(itemId, (wanted.get(itemId) ?? 0) + qty);
+    });
+
+    const ids = [...wanted.keys()];
+    const found = await prisma.item.findMany({ where: { id: { in: ids } } });
+    const byId = new Map(found.map((it) => [it.id, it]));
+
+    for (const [id, qty] of wanted) {
+      const item = byId.get(id);
+      if (!item) throw new ApiError(404, `Equipment #${id} was not found`);
+      if (item.status !== "AVAILABLE")
+        throw new ApiError(
+          409,
+          `"${item.name}" is not available for borrowing`,
+        );
+      if (item.availableQuantity < qty)
+        throw new ApiError(
+          409,
+          `Only ${item.availableQuantity} unit(s) of "${item.name}" are available`,
+        );
+    }
+
+    const batchId = randomUUID();
+    const loans = await prisma.$transaction(
+      ids.map((id) =>
+        prisma.loan.create({
+          data: {
+            userId: user.id,
+            itemId: id,
+            quantity: wanted.get(id)!,
+            purpose: cleanPurpose,
+            dateNeeded: needed,
+            returnDate: ret,
+            batchId,
+          },
+          include: { item: { include: { category: true } } },
+        }),
+      ),
+    );
+
+    res.status(201).json({ batchId, count: loans.length, loans });
   }),
 );
 
@@ -160,6 +243,12 @@ router.patch(
     const { action, remarks } = (req.body ?? {}) as Record<string, unknown>;
     if (action !== "approve" && action !== "reject")
       throw new ApiError(400, 'Action must be "approve" or "reject"');
+    // Remarks are free text stored in the DB and mailed back to the borrower,
+    // so cap the length and normalise whitespace before either happens.
+    const cleanRemarks =
+      remarks === undefined || remarks === null || remarks === ""
+        ? null
+        : reqStr(remarks, "Remarks", { min: 1, max: 300 });
 
     const loan = await prisma.loan.findUnique({
       where: { id },
@@ -192,7 +281,7 @@ router.patch(
       data: {
         status,
         decidedById: req.user!.id,
-        remarks: remarks ? String(remarks).trim() : loan.remarks,
+        remarks: cleanRemarks ?? loan.remarks,
       },
       include: { item: { include: { category: true } }, user: true },
     });
@@ -203,8 +292,8 @@ router.patch(
         ? "Your equipment request was approved"
         : "Your equipment request was rejected",
       `Dear ${updated.user.name},\n\nYour request for "${updated.item.name}" x${updated.quantity} has been ${status.toLowerCase()}.${
-        remarks
-          ? `\n\nRemarks from the equipment desk: ${String(remarks).trim()}`
+        cleanRemarks
+          ? `\n\nRemarks from the equipment desk: ${cleanRemarks}`
           : ""
       }\n\nEquipment Desk`,
     );
@@ -255,6 +344,12 @@ router.patch(
     const isAdmin = req.user!.role === "ADMIN";
     const finalOutcome =
       isAdmin && (outcome === "DAMAGED" || outcome === "LOST") ? outcome : "OK";
+    // Non-admins can never set a negative outcome (forced to "OK" above), but
+    // the note they write still needs the same length cap as everyone else's.
+    const cleanNote =
+      note === undefined || note === null || note === ""
+        ? null
+        : reqStr(note, "Note", { min: 1, max: 300 });
 
     const loan = await prisma.loan.findUnique({
       where: { id },
@@ -302,8 +397,8 @@ router.patch(
         }
       }
 
-      const remarks = note
-        ? `${loan.remarks ? loan.remarks + " | " : ""}Return note (${finalOutcome}): ${String(note).trim()}`
+      const remarks = cleanNote
+        ? `${loan.remarks ? loan.remarks + " | " : ""}Return note (${finalOutcome}): ${cleanNote}`
         : loan.remarks;
 
       return tx.loan.update({
@@ -316,6 +411,9 @@ router.patch(
         },
       });
     });
+
+    // The unit is back - anyone waiting for a window on it can be offered.
+    await releaseSlot(loan.itemId);
 
     res.json(updated);
   }),

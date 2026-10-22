@@ -316,44 +316,81 @@ const ITEMS: Array<{
 ];
 
 const IMAGE_URLS: Record<string, string> = {
+<<<<<<< HEAD
   "EQ-1001": "/images/eq-1001-volleyball.jpg",
+=======
+  "EQ-1001":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/3/3e/Beach_volleyball_ball.jpg/960px-Beach_volleyball_ball.jpg",
+>>>>>>> origin/main
   "EQ-1002":
-    "https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/be/Isolated_basketball.png/960px-Isolated_basketball.png",
   "EQ-1003":
+<<<<<<< HEAD
     "https://images.unsplash.com/photo-1626224583764-f87db24ac4ea?auto=format&fit=crop&w=900&q=85",
   "EQ-1004": "/images/eq-1004-volleyball-net.jpg",
   "EQ-2001": "/images/eq-2001-compound-microscope.jpg",
   "EQ-2002": "/images/eq-2002-beaker-set.jpg",
+=======
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0f/Badminton_Racket.jpg/960px-Badminton_Racket.jpg",
+  "EQ-1004":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/f/ff/Beach_Volleyball_Net%2C_Destin%2C_Florida.jpg/960px-Beach_Volleyball_Net%2C_Destin%2C_Florida.jpg",
+  "EQ-2001":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/b/b0/Binocular_compound_microscope%2C_Carl_Zeiss_Jena%2C_1914_%286779276516%29.jpg/960px-Binocular_compound_microscope%2C_Carl_Zeiss_Jena%2C_1914_%286779276516%29.jpg",
+  "EQ-2002":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/8/81/Beaker_contains_solution.jpg/960px-Beaker_contains_solution.jpg",
+>>>>>>> origin/main
   "EQ-2003":
-    "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/0b/2017_Cyfrowy_miernik_uniwersalny.jpg/960px-2017_Cyfrowy_miernik_uniwersalny.jpg",
   "EQ-3001":
-    "https://images.unsplash.com/photo-1626379953822-baec19c3accd?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/60/Another_Shadow_-_video_projector_%26_OptiTrack_camera_-_SIGGRAPH_Asia_2009.jpg/960px-Another_Shadow_-_video_projector_%26_OptiTrack_camera_-_SIGGRAPH_Asia_2009.jpg",
   "EQ-3002":
-    "https://images.unsplash.com/photo-1516035069371-29a1b244cc32?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/a/a9/2016_Sony_DSLR-A700.jpg/960px-2016_Sony_DSLR-A700.jpg",
   "EQ-3003":
+<<<<<<< HEAD
     "https://images.unsplash.com/photo-1590602847861-f357a9332bbc?auto=format&fit=crop&w=900&q=85",
   "EQ-3004": "/images/eq-3004-pa-speaker.jpg",
+=======
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/6d/Boya_Wireless_Microphone.jpg/960px-Boya_Wireless_Microphone.jpg",
+  "EQ-3004":
+    "https://upload.wikimedia.org/wikipedia/commons/2/21/Bass_reflex_loudspeakers_by_Focal-JMLab.jpg",
+>>>>>>> origin/main
   "EQ-4001":
-    "https://images.unsplash.com/photo-1496181133206-80ce9b88a853?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/79/Dell_Inspiron_1525.jpeg/960px-Dell_Inspiron_1525.jpeg",
   "EQ-4002":
+<<<<<<< HEAD
     "https://images.unsplash.com/photo-1544244015-0df4b3ffc6b0?auto=format&fit=crop&w=900&q=85",
   "EQ-4003": "/images/eq-4003-hdmi-cable.jpg",
+=======
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/e/ee/Apple_iPad.jpg/960px-Apple_iPad.jpg",
+  "EQ-4003":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/Adapter_cable_hdmi_dvi-d_IMGP1647_smial_wp.jpg/960px-Adapter_cable_hdmi_dvi-d_IMGP1647_smial_wp.jpg",
+>>>>>>> origin/main
   "EQ-4004":
-    "https://images.unsplash.com/photo-1625842268584-8f3296236761?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/0/04/2023_Hub_USB_2.0.jpg/960px-2023_Hub_USB_2.0.jpg",
   "EQ-5001":
-    "https://images.unsplash.com/photo-1525201548942-d8732f6617a0?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/5/5d/00_Walden_Acoustic_Guitar_D310e_01.jpg/960px-00_Walden_Acoustic_Guitar_D310e_01.jpg",
   "EQ-5002":
+<<<<<<< HEAD
     "https://images.unsplash.com/photo-1520523839897-bd0b52f945a0?auto=format&fit=crop&w=900&q=85",
   "EQ-5003": "/images/eq-5003-violin.jpg",
   "EQ-5004":
     "https://images.unsplash.com/photo-1460039230329-eb070fc6c77c?auto=format&fit=crop&w=900&q=85",
   "EQ-6001": "/images/eq-6001-folding-table.jpg",
+=======
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/2/2d/Williams_Allegro_2_88-Key_Hammer_Action_Digital_Piano_%282016-06-25_22.01.41_by_Scott_Ritchie%29.jpg/960px-Williams_Allegro_2_88-Key_Hammer_Action_Digital_Piano_%282016-06-25_22.01.41_by_Scott_Ritchie%29.jpg",
+  "EQ-5003":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/7/7d/Violin_%26_bow.jpg/960px-Violin_%26_bow.jpg",
+  "EQ-5004":
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/d/d7/00_Fender_Frontman_15G_guitar_Amplifier.jpg/960px-00_Fender_Frontman_15G_guitar_Amplifier.jpg",
+  "EQ-6001":
+    "https://upload.wikimedia.org/wikipedia/commons/4/41/LifetimeTable.jpg",
+>>>>>>> origin/main
   "EQ-6002":
-    "https://images.unsplash.com/photo-1503602642458-232111445657?auto=format&fit=crop&w=900&q=85",
+    "https://upload.wikimedia.org/wikipedia/commons/2/2f/40_4_stack_chair_david_rowland_250.png",
   "EQ-6003":
-    "https://images.unsplash.com/photo-1506157786151-b8491531f063?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/6/65/Eufuria_Albany_Capital_Center_main_stage_Mailpup.jpg/960px-Eufuria_Albany_Capital_Center_main_stage_Mailpup.jpg",
   "EQ-6004":
-    "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?auto=format&fit=crop&w=900&q=85",
+    "https://thumb.wikimedia.org/wikipedia/commons/thumb/4/48/A_Frame_Tent_for_Construction_.jpg/960px-A_Frame_Tent_for_Construction_.jpg",
 };
 
 async function main() {
@@ -520,6 +557,153 @@ async function main() {
           createdAt: days(-1),
         },
       ],
+    });
+  }
+
+  // Reservations and waitlist entries use date-only pickup dates (local
+  // midnight) and an end-of-day return, matching routes/reservations.ts.
+  const pickupIn = (n: number): Date => {
+    const d = new Date()
+    d.setDate(d.getDate() + n)
+    d.setHours(0, 0, 0, 0)
+    return d
+  }
+  const endOfDay = (d: Date): Date => {
+    const c = new Date(d)
+    c.setHours(23, 59, 59, 999)
+    return c
+  }
+
+  if ((await prisma.reservation.count()) === 0) {
+    await prisma.reservation.createMany({
+      data: [
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-2001")!,
+          quantity: 1,
+          reservationDate: pickupIn(3),
+          pickupTime: "09:00",
+          returnDate: endOfDay(pickupIn(5)),
+          purpose: "Physics lab make-up session",
+          status: "PENDING",
+          createdAt: days(-1),
+        },
+        {
+          userId: faculty.id,
+          itemId: itemsByCode.get("EQ-6001")!,
+          quantity: 2,
+          reservationDate: pickupIn(6),
+          pickupTime: "13:30",
+          returnDate: endOfDay(pickupIn(8)),
+          purpose: "Founders Day stage program",
+          status: "APPROVED",
+          decidedById: admin.id,
+          remarks: "Collect from the equipment desk before 2pm.",
+          createdAt: days(-2),
+        },
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-3001")!,
+          quantity: 1,
+          reservationDate: pickupIn(-10),
+          pickupTime: "10:00",
+          returnDate: endOfDay(pickupIn(-8)),
+          purpose: "Filmmaking club short film shoot",
+          status: "COMPLETED",
+          decidedById: admin.id,
+          pickedUpAt: days(-10),
+          createdAt: days(-12),
+        },
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-4001")!,
+          quantity: 1,
+          reservationDate: pickupIn(2),
+          pickupTime: "14:00",
+          returnDate: endOfDay(pickupIn(4)),
+          purpose: "Capstone demo day rehearsal",
+          status: "CANCELLED",
+          remarks: "Cancelled by borrower",
+          createdAt: days(-3),
+        },
+        {
+          userId: faculty.id,
+          itemId: itemsByCode.get("EQ-5001")!,
+          quantity: 1,
+          reservationDate: pickupIn(-3),
+          pickupTime: "15:00",
+          returnDate: endOfDay(pickupIn(-1)),
+          purpose: "Music elective accompaniment",
+          status: "EXPIRED",
+          createdAt: days(-6),
+        },
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-1002")!,
+          quantity: 1,
+          reservationDate: pickupIn(10),
+          pickupTime: "08:30",
+          returnDate: endOfDay(pickupIn(12)),
+          purpose: "Inter-school volleyball exhibition",
+          status: "REJECTED",
+          decidedById: admin.id,
+          remarks: "Unit is booked for the intramurals opening. Try next week.",
+          createdAt: days(-2),
+        },
+      ],
+    });
+  }
+
+  // A two-person queue plus one live 24h offer, so the waitlist, offer
+  // notification and claim flow are all demoable right after seeding.
+  if ((await prisma.waitlistEntry.count()) === 0) {
+    await prisma.waitlistEntry.createMany({
+      data: [
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-4001")!,
+          quantity: 1,
+          wantedDate: pickupIn(4),
+          pickupTime: "14:00",
+          wantedReturn: endOfDay(pickupIn(6)),
+          purpose: "Capstone demo day rehearsal",
+          status: "WAITING",
+          createdAt: days(-3),
+        },
+        {
+          userId: faculty.id,
+          itemId: itemsByCode.get("EQ-4001")!,
+          quantity: 1,
+          wantedDate: pickupIn(5),
+          wantedReturn: endOfDay(pickupIn(7)),
+          purpose: "Departmental accreditation review",
+          status: "WAITING",
+          createdAt: days(-2),
+        },
+        {
+          userId: student.id,
+          itemId: itemsByCode.get("EQ-3001")!,
+          quantity: 1,
+          wantedDate: pickupIn(8),
+          pickupTime: "10:00",
+          wantedReturn: endOfDay(pickupIn(10)),
+          purpose: "Student org week film screening",
+          status: "OFFERED",
+          offeredAt: new Date(Date.now() - 6 * 60 * 60 * 1000),
+          offerExpiresAt: new Date(Date.now() + 18 * 60 * 60 * 1000),
+          createdAt: days(-4),
+        },
+      ],
+    });
+
+    await prisma.notification.create({
+      data: {
+        userId: student.id,
+        type: "WAITLIST_OFFER",
+        title: "A slot opened up for the HD Projector",
+        body: "Your waitlist window is now held for you. Claim it within 24 hours or the slot passes to the next person in line.",
+        link: "/my-reservations",
+      },
     });
   }
 
