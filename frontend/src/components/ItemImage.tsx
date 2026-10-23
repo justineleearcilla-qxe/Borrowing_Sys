@@ -7,12 +7,14 @@ export function ItemImage({
   alt,
   className = "",
   iconClassName = "h-14 w-14",
+  loading = "lazy",
 }: {
   imageUrl: string | null;
   categorySlug: string;
   alt: string;
   className?: string;
   iconClassName?: string;
+  loading?: "eager" | "lazy";
 }) {
   const [failed, setFailed] = useState(false);
 
@@ -29,6 +31,8 @@ export function ItemImage({
           src={imageUrl}
           alt={alt}
           onError={() => setFailed(true)}
+          loading={loading}
+          decoding="async"
           className="h-full w-full object-cover"
         />
       ) : (

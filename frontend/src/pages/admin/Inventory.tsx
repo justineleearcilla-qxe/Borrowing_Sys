@@ -38,7 +38,6 @@ export default function AdminInventory() {
   const [creating, setCreating] = useState(false)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
-  const [qrItem, setQrItem] = useState<Item | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
 
   function load() {
@@ -136,7 +135,7 @@ export default function AdminInventory() {
     <>
       <PageHeader
         title="Inventory Management"
-        description="Add, edit and retire equipment. Generate QR codes for quick check-out."
+        description="Add, edit and retire equipment."
         actions={
           <Button onClick={openCreate}>
             <Icon name="plus" className="h-4 w-4" />
@@ -168,7 +167,12 @@ export default function AdminInventory() {
             <EmptyState title="No items found" hint="Adjust your search or add a new item." />
           </div>
         ) : (
-          <div className="admin-table-scroll">
+          <div
+            className="admin-table-scroll"
+            role="region"
+            aria-label="Inventory table"
+            tabIndex={0}
+          >
             <table className="w-full min-w-[900px]">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
@@ -215,10 +219,6 @@ export default function AdminInventory() {
                         <Button variant="secondary" size="sm" onClick={() => openEdit(item)}>
                           <Icon name="edit" className="h-3.5 w-3.5" />
                           Edit
-                        </Button>
-                        <Button variant="secondary" size="sm" onClick={() => setQrItem(item)}>
-                          <Icon name="qr" className="h-3.5 w-3.5" />
-                          QR
                         </Button>
                         <Button
                           variant="danger"
@@ -307,9 +307,9 @@ export default function AdminInventory() {
           </div>
           {editing && (
             <div className="sm:col-span-2">
-              <Field label="Photo">
+              <Field label="Photo" htmlFor="inventory-photo">
                 <div className="flex flex-wrap items-center gap-3">
-                  <input ref={fileRef} type="file" accept="image/*" className="input cursor-pointer py-1.5 file:mr-3 file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold" />
+                  <input id="inventory-photo" ref={fileRef} type="file" accept="image/*" className="input cursor-pointer py-1.5 file:mr-3 file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold" />
                   <Button variant="secondary" size="sm" onClick={uploadImage} disabled={saving}>
                     Upload
                   </Button>
@@ -321,20 +321,6 @@ export default function AdminInventory() {
         </div>
       </Modal>
 
-      <Modal open={Boolean(qrItem)} onClose={() => setQrItem(null)} title={`QR code - ${qrItem?.name ?? ''}`}>
-        {qrItem && (
-          <div className="flex flex-col items-center gap-3">
-            <img src={`/api/items/${qrItem.id}/qrcode`} alt={`QR code for ${qrItem.name}`} className="h-64 w-64 border border-slate-200 bg-white p-2" />
-            <p className="font-mono text-sm font-bold tracking-wider text-slate-700">{qrItem.code}</p>
-            <a href={`/api/items/${qrItem.id}/qrcode`} download={`${qrItem.code}.png`}>
-              <Button variant="secondary" size="sm">
-                Download PNG
-              </Button>
-            </a>
-            <p className="text-center text-xs text-slate-400">Print and attach this QR code to the physical item so staff can scan it during check-out and check-in.</p>
-          </div>
-        )}
-      </Modal>
     </>
   )
 }

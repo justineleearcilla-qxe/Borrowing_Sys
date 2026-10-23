@@ -244,6 +244,37 @@
   background-color: #1e293b;
 }
 
+[data-theme="dark"] .th.request-table-heading {
+  background-color: #334155;
+  color: #f1f5f9;
+}
+
+[data-theme="dark"] .badge.request-status-pending {
+  border-color: #c2410c;
+  background-color: rgba(154, 52, 18, 0.42);
+  color: #fed7aa;
+}
+
+[data-theme="dark"] .btn.request-action-approve {
+  border-color: #047857;
+  background-color: rgba(6, 78, 59, 0.4);
+  color: #a7f3d0;
+}
+
+[data-theme="dark"] .btn.request-action-approve:hover {
+  background-color: rgba(6, 78, 59, 0.65);
+}
+
+[data-theme="dark"] .btn.request-action-reject {
+  border-color: #b91c1c;
+  background-color: rgba(127, 29, 29, 0.45);
+  color: #fecaca;
+}
+
+[data-theme="dark"] .btn.request-action-reject:hover {
+  background-color: rgba(127, 29, 29, 0.65);
+}
+
 [data-theme="dark"] .btn-ghost {
   color: #cbd5e1;
 }
@@ -333,6 +364,16 @@
   border-color: #047857;
   background-color: rgba(6, 78, 59, 0.4);
   color: #a7f3d0;
+}
+
+[data-theme="dark"] .sidebar-signout {
+  border-color: #b91c1c;
+  background-color: rgba(127, 29, 29, 0.45);
+  color: #fecaca;
+}
+
+[data-theme="dark"] .sidebar-signout:hover {
+  background-color: rgba(127, 29, 29, 0.65);
 }
 
 [data-theme="dark"] .badge-yellow {

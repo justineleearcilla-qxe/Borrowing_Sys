@@ -5,6 +5,8 @@ import type { Loan } from "../types";
 import {
   daysUntil,
   formatDate,
+  isDueSoon,
+  loanStatusTone,
 } from "../lib/format";
 import {
   Alert,
@@ -195,12 +197,8 @@ export default function MyLoans() {
     () => loans.filter((l) => ["RETURNED", "REJECTED"].includes(l.status)),
     [loans],
   );
-<<<<<<< HEAD
   const shown = tab === "active" ? active : tab === "pending" ? pending : history;
-=======
-  const shown = tab === "active" ? active : history;
   const groups = useMemo(() => groupLoans(shown), [shown]);
->>>>>>> origin/main
 
   return (
     <>
@@ -273,83 +271,6 @@ export default function MyLoans() {
           </div>
         ) : (
           <div className="divide-y divide-slate-200">
-<<<<<<< HEAD
-            {shown.map((l) => {
-              const overdue = l.status === "OVERDUE";
-              const statusTone = {
-                PENDING: "yellow",
-                APPROVED: "blue",
-                REJECTED: "gray",
-                BORROWED: "blue",
-                RETURNED: "gray",
-                OVERDUE: "red",
-              }[l.status] as "yellow" | "blue" | "gray" | "red";
-              return (
-                <div
-                  key={l.id}
-                  className={`px-4 py-4 sm:px-5 ${overdue ? "border-l-4 border-l-red-600" : ""}`}
-                >
-                  <div className="flex flex-wrap items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <Link
-                        to={`/items/${l.item.id}`}
-                        className="text-base font-semibold text-slate-800 hover:text-primary-900 hover:underline"
-                      >
-                        {l.item.name}
-                      </Link>
-                      <p className="mt-2 text-xs font-medium uppercase tracking-wide text-slate-500">
-                        Due date
-                      </p>
-                      <p
-                        className={`text-sm font-bold ${
-                          overdue ? "text-red-700" : "text-slate-800"
-                        }`}
-                      >
-                        {formatDate(l.returnDate)}
-                        {overdue &&
-                          ` · ${Math.abs(daysUntil(l.returnDate))} day(s) late`}
-                      </p>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Quantity: {l.quantity} · Date needed:{" "}
-                        {formatDate(l.dateNeeded)}
-                      </p>
-                      <p className="mt-1 max-w-xl text-xs italic text-slate-500">
-                        Purpose: {l.purpose}
-                      </p>
-                      {l.remarks && (
-                        <p className="mt-1 max-w-xl text-xs text-slate-500">
-                          Remarks: {l.remarks}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex flex-col items-end gap-2">
-                      <Badge tone={statusTone}>
-                        {l.status}
-                      </Badge>
-                      {l.status === "PENDING" && (
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => cancel(l.id)}
-                          disabled={cancellingId === l.id}
-                        >
-                          {cancellingId === l.id ? "Cancelling..." : "Cancel"}
-                        </Button>
-                      )}
-                      {(l.status === "BORROWED" || l.status === "OVERDUE") && (
-                        <Button
-                          variant="success"
-                          size="sm"
-                          onClick={() => returnLoan(l.id)}
-                          disabled={returningId === l.id}
-                        >
-                          {returningId === l.id
-                            ? "Returning..."
-                            : "Mark returned"}
-                        </Button>
-                      )}
-                    </div>
-=======
             {groups.map((g) =>
               g.kind === "single" ? (
                 <LoanRow
@@ -382,7 +303,6 @@ export default function MyLoans() {
                         onReturn={returnLoan}
                       />
                     ))}
->>>>>>> origin/main
                   </div>
                 </div>
               ),

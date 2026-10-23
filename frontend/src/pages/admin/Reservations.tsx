@@ -89,7 +89,7 @@ export default function AdminReservations() {
             <button
               key={t.key}
               onClick={() => setStatus(t.key)}
-              className={`-mb-px border px-4 py-2 text-sm font-semibold transition-colors ${
+              className={`admin-filter-tab -mb-px border px-4 py-2 text-sm font-semibold transition-colors ${
                 status === t.key
                   ? 'border-primary-800 border-b-white bg-white text-primary-800'
                   : 'border-transparent bg-slate-50 text-slate-500 hover:text-slate-700'
@@ -133,7 +133,12 @@ export default function AdminReservations() {
             />
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div
+            className="overflow-x-auto"
+            role="region"
+            aria-label="Reservations table"
+            tabIndex={0}
+          >
             <table className="w-full min-w-[940px]">
               <thead className="border-b border-slate-200 bg-slate-50">
                 <tr>
@@ -182,6 +187,7 @@ export default function AdminReservations() {
                         {r.status === 'PENDING' && (
                           <>
                             <Button
+                              className="request-table-control request-action-approve"
                               size="sm"
                               variant="success"
                               onClick={() => approve(r)}
@@ -190,6 +196,7 @@ export default function AdminReservations() {
                               Approve
                             </Button>
                             <Button
+                              className="request-table-control request-action-reject"
                               size="sm"
                               variant="danger"
                               onClick={() => setRejecting(r)}

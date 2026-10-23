@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import {
   BrowserRouter,
   Navigate,
@@ -21,8 +22,9 @@ import Cart from "./pages/Cart";
 import AdminRequests from "./pages/admin/Requests";
 import AdminInventory from "./pages/admin/Inventory";
 import AdminReservations from "./pages/admin/Reservations";
-import AdminScan from "./pages/admin/Scan";
 import AdminReports from "./pages/admin/Reports";
+
+const AdminScan = lazy(() => import("./pages/admin/Scan"));
 
 function RequireAuth() {
   const { user, loading } = useAuth();
@@ -85,7 +87,14 @@ export default function App() {
                 <Route element={<RequireAdmin />}>
                   <Route path="admin/requests" element={<AdminRequests />} />
                   <Route path="admin/inventory" element={<AdminInventory />} />
-                  <Route path="admin/scan" element={<AdminScan />} />
+                  <Route
+                    path="admin/scan"
+                    element={
+                      <Suspense fallback={<FullPageSpinner />}>
+                        <AdminScan />
+                      </Suspense>
+                    }
+                  />
                   <Route path="admin/reports" element={<AdminReports />} />
                 </Route>
               </Route>

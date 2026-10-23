@@ -133,6 +133,8 @@ export default function Cart() {
                       <img
                         src={l.imageUrl}
                         alt={l.name}
+                        loading="lazy"
+                        decoding="async"
                         className="h-full w-full object-cover"
                       />
                     ) : (

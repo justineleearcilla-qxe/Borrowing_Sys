@@ -3,12 +3,8 @@ import { Link, useParams } from "react-router-dom";
 import { api, apiError, apiErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import type { Item } from "../types";
-<<<<<<< HEAD
-import { toDateInput } from "../lib/format";
-=======
-import { conditionTone, formatDate, itemStatusTone, toDateInput } from "../lib/format";
+import { formatDate, toDateInput } from "../lib/format";
 import { useCart } from "../context/CartContext";
->>>>>>> origin/main
 import {
   Alert,
   Button,
@@ -21,12 +17,8 @@ import {
   Spinner,
   Textarea,
 } from "../components/ui";
-<<<<<<< HEAD
 import { ItemImage } from "../components/ItemImage";
-=======
-import { CategoryIcon } from "../components/CategoryIcon";
 import { Icon } from "../components/Icon";
->>>>>>> origin/main
 
 export default function ItemDetail() {
   const { id } = useParams();
@@ -198,7 +190,6 @@ export default function ItemDetail() {
       </div>
     );
 
-<<<<<<< HEAD
   const available =
     item.status === "AVAILABLE" &&
     item.condition !== "DAMAGED" &&
@@ -213,20 +204,6 @@ export default function ItemDetail() {
     : lowStock
       ? `Only ${item.availableQuantity} left`
       : `${item.availableQuantity} available`;
-=======
-  const specs: Array<[string, string]> = [
-    ["Item code", item.code],
-    ["Category", item.category.name],
-    ["Department", item.department ?? "-"],
-    ["Total quantity", String(item.totalQuantity)],
-    ["Available", String(item.availableQuantity)],
-    ...(item.availableQuantity === 0 && item.nextAvailableDate
-      ? ([["Next available", formatDate(item.nextAvailableDate)]] as Array<
-          [string, string]
-        >)
-      : []),
-  ];
->>>>>>> origin/main
 
   return (
     <>
@@ -247,6 +224,7 @@ export default function ItemDetail() {
             alt={item.name}
             className="aspect-[4/3] w-full"
             iconClassName="h-20 w-20"
+            loading="eager"
           />
           <div className="space-y-4 p-4 sm:p-5">
             <div>

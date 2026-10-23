@@ -17,7 +17,9 @@ import {
 } from "../components/ui";
 import { Icon } from "../components/Icon";
 
-<<<<<<< HEAD
+/** Remembers a dismissed penalty alert until the penalty count changes. */
+const PENALTY_ALERT_KEY = "equiphub.dismissedPenaltyAlert";
+
 function LoanRows({
   loans,
   overdueFirst = false,
@@ -25,12 +27,6 @@ function LoanRows({
   loans: Loan[];
   overdueFirst?: boolean;
 }) {
-=======
-/** Remembers a dismissed penalty alert until the penalty count changes. */
-const PENALTY_ALERT_KEY = "equiphub.dismissedPenaltyAlert";
-
-function LoanRows({ loans }: { loans: Loan[] }) {
->>>>>>> origin/main
   if (loans.length === 0) return <EmptyState title="Nothing here yet" />;
   const visibleLoans = overdueFirst
     ? [...loans].sort((a, b) => {
@@ -98,11 +94,9 @@ function StudentView({
   loans: Loan[];
 }) {
   const { user } = useAuth();
-<<<<<<< HEAD
   const dueSoonCount = loans.filter((loan) =>
     isDueSoon(loan.status, loan.returnDate),
   ).length;
-=======
   const [penaltyDismissed, setPenaltyDismissed] = useState(
     () =>
       user != null &&
@@ -114,7 +108,6 @@ function StudentView({
     setPenaltyDismissed(true);
   }
 
->>>>>>> origin/main
   return (
     <>
       <PageHeader
@@ -137,18 +130,6 @@ function StudentView({
           </Alert>
         </div>
       )}
-<<<<<<< HEAD
-      {!user?.isBlacklisted && user && user.penaltyPoints > 0 && (
-        <div className="mb-6">
-          <Alert tone="warning">
-            You have {user.penaltyPoints} penalty point(s) from late returns. 6
-            points will suspend your borrowing privileges.
-          </Alert>
-        </div>
-      )}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard label="Active loans" value={data.activeLoans} />
-=======
       {!user?.isBlacklisted && user && user.penaltyPoints > 0 &&
         !penaltyDismissed && (
           <div className="mb-6">
@@ -158,9 +139,8 @@ function StudentView({
             </Alert>
           </div>
         )}
-      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Active Loans" value={data.activeLoans} />
->>>>>>> origin/main
+      <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <StatCard label="Active loans" value={data.activeLoans} />
         <StatCard
           label="Pending"
           value={loans.filter((loan) => loan.status === "PENDING").length}
@@ -213,14 +193,6 @@ function AdminView({ data }: { data: AdminDashboard }) {
       <PageHeader
         title="Admin Dashboard"
         description="Inventory health and the pending request queue at a glance."
-        actions={
-          <Link to="/catalog">
-            <Button variant="secondary">
-              <Icon name="arrow-left" className="h-4 w-4" />
-              Browse equipment
-            </Button>
-          </Link>
-        }
       />
       <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <StatCard

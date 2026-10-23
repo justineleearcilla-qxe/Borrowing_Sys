@@ -85,8 +85,10 @@ export default function AdminRequests() {
           <button
             key={t.key}
             onClick={() => setStatus(t.key)}
-            className={`-mb-px border px-4 py-2 text-sm font-semibold transition-colors ${
-              status === t.key ? 'border-primary-800 border-b-white bg-white text-primary-800' : 'border-transparent bg-slate-50 text-slate-500 hover:text-slate-700'
+            className={`admin-filter-tab -mb-px border px-4 py-2 text-sm font-semibold transition-colors ${
+              status === t.key
+                ? 'border-primary-800 border-b-white bg-white text-primary-800'
+                : 'border-transparent bg-slate-50 text-slate-500 hover:text-slate-700'
             }`}
           >
             {t.label}
@@ -105,21 +107,26 @@ export default function AdminRequests() {
             <EmptyState title="No requests in this view" />
           </div>
         ) : (
-          <div className="admin-table-scroll">
+          <div
+            className="admin-table-scroll"
+            role="region"
+            aria-label="Borrow requests table"
+            tabIndex={0}
+          >
             <table className="w-full min-w-[900px]">
-              <thead className="border-b border-slate-200 bg-slate-50">
+              <thead className="border-b border-slate-200">
                 <tr>
-                  <th className="th">Requester</th>
-                  <th className="th">Item</th>
-                  <th className="th">Dates</th>
-                  <th className="th">Purpose / Remarks</th>
-                  <th className="th">Status</th>
-                  <th className="th">Actions</th>
+                  <th className="th request-table-heading">Requester</th>
+                  <th className="th request-table-heading">Item</th>
+                  <th className="th request-table-heading">Dates</th>
+                  <th className="th request-table-heading">Purpose / Remarks</th>
+                  <th className="th request-table-heading">Status</th>
+                  <th className="th request-table-heading">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {loans.map((l) => (
-                  <tr key={l.id} className={l.status === 'OVERDUE' ? 'bg-red-50/50' : undefined}>
+                  <tr key={l.id}>
                     <td className="td">
                       <p className="font-semibold text-slate-800">{l.user?.name}</p>
                       <p className="text-xs text-slate-400">{l.user?.email}</p>
@@ -142,27 +149,32 @@ export default function AdminRequests() {
                       {l.outcome && l.outcome !== 'OK' && <Badge tone="red" className="mt-1">Returned {l.outcome}</Badge>}
                     </td>
                     <td className="td">
-                      <Badge tone={loanStatusTone[l.status as LoanStatus] as never}>{l.status}</Badge>
+                      <Badge
+                        tone={loanStatusTone[l.status as LoanStatus] as never}
+                        className={`request-table-control${l.status === 'PENDING' ? ' request-status-pending' : ''}`}
+                      >
+                        {l.status}
+                      </Badge>
                     </td>
                     <td className="td">
                       <div className="flex flex-wrap gap-2">
                         {l.status === 'PENDING' && (
                           <>
-                            <Button variant="success" size="sm" disabled={busyId === l.id} onClick={() => approve(l)}>
+                            <Button className="request-table-control request-action-approve" variant="success" size="sm" disabled={busyId === l.id} onClick={() => approve(l)}>
                               Approve
                             </Button>
-                            <Button variant="danger" size="sm" disabled={busyId === l.id} onClick={() => { setRejectLoan(l); setRejectRemarks('') }}>
+                            <Button className="request-table-control request-action-reject" variant="danger" size="sm" disabled={busyId === l.id} onClick={() => { setRejectLoan(l); setRejectRemarks('') }}>
                               Reject
                             </Button>
                           </>
                         )}
                         {l.status === 'APPROVED' && (
-                          <Button size="sm" disabled={busyId === l.id} onClick={() => checkout(l)}>
+                          <Button className="request-table-control" size="sm" disabled={busyId === l.id} onClick={() => checkout(l)}>
                             Mark borrowed
                           </Button>
                         )}
                         {(l.status === 'BORROWED' || l.status === 'OVERDUE') && (
-                          <Button variant="secondary" size="sm" disabled={busyId === l.id} onClick={() => { setReturnLoan(l); setReturnOutcome('OK'); setReturnNote('') }}>
+                          <Button className="request-table-control" variant="secondary" size="sm" disabled={busyId === l.id} onClick={() => { setReturnLoan(l); setReturnOutcome('OK'); setReturnNote('') }}>
                             Process return
                           </Button>
                         )}

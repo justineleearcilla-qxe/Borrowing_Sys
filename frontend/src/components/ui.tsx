@@ -1,13 +1,20 @@
 import {
   ButtonHTMLAttributes,
   CSSProperties,
+  createContext,
   InputHTMLAttributes,
   ReactNode,
   SelectHTMLAttributes,
   TextareaHTMLAttributes,
+  useContext,
+  useEffect,
+  useId,
+  useRef,
 } from "react";
 import clsx from "clsx";
 import { Icon } from "./Icon";
+
+const FieldControlId = createContext<string | undefined>(undefined);
 
 type ButtonVariant = "primary" | "secondary" | "danger" | "success" | "ghost";
 
@@ -97,28 +104,55 @@ export function Label({
 }
 
 export function Input(props: InputHTMLAttributes<HTMLInputElement>) {
-  return <input {...props} className={clsx("input", props.className)} />;
+  const fieldControlId = useContext(FieldControlId);
+  return (
+    <input
+      {...props}
+      id={props.id ?? fieldControlId}
+      className={clsx("input", props.className)}
+    />
+  );
 }
 
 export function Select(props: SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select {...props} className={clsx("select", props.className)} />;
+  const fieldControlId = useContext(FieldControlId);
+  return (
+    <select
+      {...props}
+      id={props.id ?? fieldControlId}
+      className={clsx("select", props.className)}
+    />
+  );
 }
 
 export function Textarea(props: TextareaHTMLAttributes<HTMLTextAreaElement>) {
-  return <textarea {...props} className={clsx("textarea", props.className)} />;
+  const fieldControlId = useContext(FieldControlId);
+  return (
+    <textarea
+      {...props}
+      id={props.id ?? fieldControlId}
+      className={clsx("textarea", props.className)}
+    />
+  );
 }
 
 export function Field({
   label,
   children,
+  htmlFor,
 }: {
   label: string;
   children: ReactNode;
+  htmlFor?: string;
 }) {
+  const generatedId = useId();
+  const controlId = htmlFor ?? generatedId;
   return (
     <div>
-      <Label>{label}</Label>
-      {children}
+      <Label htmlFor={controlId}>{label}</Label>
+      <FieldControlId.Provider value={controlId}>
+        {children}
+      </FieldControlId.Provider>
     </div>
   );
 }
@@ -175,6 +209,68 @@ export function Modal({
   footer?: ReactNode;
   wide?: boolean;
 }) {
+  const titleId = useId();
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    if (!open) return;
+    const previouslyFocused =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    const dialog = dialogRef.current;
+    closeButtonRef.current?.focus();
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        onCloseRef.current();
+        return;
+      }
+      if (event.key !== "Tab" || !dialog) return;
+
+      const focusable = Array.from(
+        dialog.querySelectorAll<HTMLElement>(
+          'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])',
+        ),
+      );
+      if (focusable.length === 0) {
+        event.preventDefault();
+        dialog.focus();
+        return;
+      }
+
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const focusIsOutside = !dialog.contains(document.activeElement);
+      if (
+        event.shiftKey &&
+        (document.activeElement === first || focusIsOutside)
+      ) {
+        event.preventDefault();
+        last.focus();
+      } else if (
+        !event.shiftKey &&
+        (document.activeElement === last || focusIsOutside)
+      ) {
+        event.preventDefault();
+        first.focus();
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      if (previouslyFocused?.isConnected) previouslyFocused.focus();
+    };
+  }, [open]);
+
   if (!open) return null;
   return (
     <div
@@ -182,14 +278,23 @@ export function Modal({
       onMouseDown={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby={titleId}
+        tabIndex={-1}
         className={clsx(
           "card w-full shadow-xl",
           wide ? "max-w-3xl" : "max-w-lg",
         )}
       >
         <div className="card-header">
-          <h2 className="card-title">{title}</h2>
+          <h2 id={titleId} className="card-title">
+            {title}
+          </h2>
           <button
+            ref={closeButtonRef}
+            type="button"
             onClick={onClose}
             className="btn btn-ghost btn-sm"
             aria-label="Close"

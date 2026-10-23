@@ -25,12 +25,15 @@ const staffNav = [
 const adminNav = [
   { to: "/admin/requests", label: "Requests", icon: "inbox" },
   { to: "/admin/inventory", label: "Inventory", icon: "layers" },
-  { to: "/admin/scan", label: "Scan / Check-out", icon: "qr" },
   { to: "/admin/reports", label: "Reports", icon: "chart" },
 ];
 
 function NavItems({ onNavigate }: { onNavigate?: () => void }) {
   const { user } = useAuth();
+  const visibleMainNav =
+    user?.role === "ADMIN"
+      ? mainNav.filter((item) => item.to === "/dashboard")
+      : mainNav;
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `nav-link${isActive ? " nav-link-active" : ""}`;
   return (
@@ -39,7 +42,7 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
         <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
           Main
         </p>
-        {mainNav.map((n) => (
+        {visibleMainNav.map((n) => (
           <NavLink
             key={n.to}
             to={n.to}
@@ -101,11 +104,11 @@ function UserPanel() {
       <p className="truncate text-sm font-semibold text-white">{user.name}</p>
       <p className="truncate text-xs text-slate-400">{user.email}</p>
       <div className="mt-2 flex items-center justify-between gap-2">
-        <Badge tone={user.role === "ADMIN" ? "blue" : "gray"}>
+        <Badge tone={user.role === "ADMIN" ? "blue" : "green"}>
           {user.role}
         </Badge>
         <button
-          className="flex items-center gap-1.5 text-xs font-semibold text-slate-300 hover:text-white"
+          className="sidebar-signout"
           onClick={() => {
             logout();
             navigate("/login");
@@ -132,7 +135,7 @@ function CartButton({ variant }: { variant: "sidebar" | "header" }) {
       : "text-primary-800 hover:bg-primary-100";
   return (
     <button
-      className={`relative rounded-full p-2 transition-colors ${buttonClass}`}
+      className={`layout-icon-button relative rounded-full p-2 transition-colors ${buttonClass}`}
       onClick={() => navigate("/cart")}
       aria-label={
         count > 0 ? `Cart, ${count} item${count === 1 ? "" : "s"}` : "Cart"
@@ -195,7 +198,7 @@ function NotificationBell({
   return (
     <div className="relative">
       <button
-        className={`relative rounded-full p-2 transition-colors ${buttonClass}`}
+        className={`layout-icon-button relative rounded-full p-2 transition-colors ${buttonClass}`}
         onClick={() => setOpen((o) => !o)}
         aria-label={
           unread > 0 ? `Notifications, ${unread} unread` : "Notifications"
@@ -317,16 +320,6 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen">
-<<<<<<< HEAD
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-primary-800 bg-primary-900 shadow-sm lg:flex">
-        <div className="border-b border-primary-800 px-4 py-5">
-          <p className="text-lg font-bold tracking-tight text-white">
-            EquipHub
-          </p>
-          <p className="text-[11px] uppercase tracking-widest text-slate-400">
-            Campus equipment, simplified
-          </p>
-=======
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/15 bg-primary-900/90 shadow-2xl backdrop-blur-2xl lg:flex">
         <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-5">
           <div>
@@ -346,7 +339,6 @@ export default function Layout() {
             />
             <ThemeToggle variant="sidebar" />
           </div>
->>>>>>> origin/main
         </div>
         <NavItems />
         <UserPanel />

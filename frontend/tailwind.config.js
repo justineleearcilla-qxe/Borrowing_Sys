@@ -13,6 +13,8 @@ export default {
     'badge-gray',
     'badge-blue',
     'badge-green',
+    'badge-yellow',
+    'badge-red',
     'badge-purple',
   ],
   theme: {
