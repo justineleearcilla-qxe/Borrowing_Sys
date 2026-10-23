@@ -15,7 +15,6 @@ import {
   Spinner,
   StatCard,
 } from "../components/ui";
-import { Icon } from "../components/Icon";
 
 /** Remembers a dismissed penalty alert until the penalty count changes. */
 const PENALTY_ALERT_KEY = "equiphub.dismissedPenaltyAlert";
@@ -78,7 +77,7 @@ function LoanRows({
               </p>
             </div>
           ) : (
-            <Badge tone={loanStatusTone[l.status] as never}>{l.status}</Badge>
+            <Badge className="status-badge" tone={loanStatusTone[l.status] as never}>{l.status}</Badge>
           )}
         </div>
       ))}
@@ -113,14 +112,6 @@ function StudentView({
       <PageHeader
         title={`Welcome back, ${user?.name.split(" ")[0]}`}
         description="Here is an overview of your equipment loans."
-        actions={
-          <Link to="/catalog">
-            <Button variant="secondary">
-              <Icon name="arrow-left" className="h-4 w-4" />
-              Browse equipment
-            </Button>
-          </Link>
-        }
       />
       {user?.isBlacklisted && (
         <div className="mb-6">
@@ -171,14 +162,7 @@ function StudentView({
           <LoanRows loans={data.dueSoon} overdueFirst />
         </Card>
         <Card>
-          <CardHeader
-            title="Recent Requests"
-            actions={
-              <Link to="/catalog">
-                <Button size="sm">Browse equipment</Button>
-              </Link>
-            }
-          />
+          <CardHeader title="Recent Requests" />
           <LoanRows loans={data.recent} />
         </Card>
       </div>
@@ -297,7 +281,7 @@ function AdminView({ data }: { data: AdminDashboard }) {
                     <p className="text-sm font-medium text-slate-700">
                       {i.name}
                     </p>
-                    <Badge tone={i.availableQuantity === 0 ? "red" : "yellow"}>
+                    <Badge className="status-badge" tone={i.availableQuantity === 0 ? "red" : "yellow"}>
                       {i.availableQuantity} left
                     </Badge>
                   </div>

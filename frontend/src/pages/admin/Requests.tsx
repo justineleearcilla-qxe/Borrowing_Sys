@@ -151,7 +151,7 @@ export default function AdminRequests() {
                     <td className="td">
                       <Badge
                         tone={loanStatusTone[l.status as LoanStatus] as never}
-                        className={`request-table-control${l.status === 'PENDING' ? ' request-status-pending' : ''}`}
+                        className={`status-badge request-table-control${l.status === 'PENDING' ? ' request-status-pending' : ''}`}
                       >
                         {l.status}
                       </Badge>

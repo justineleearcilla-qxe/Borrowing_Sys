@@ -20,7 +20,6 @@ import {
   PageHeader,
   Spinner,
 } from "../components/ui";
-import { Icon } from "../components/Icon";
 
 const ACTIVE_STATUSES: ReservationStatus[] = ["PENDING", "APPROVED"];
 
@@ -117,14 +116,6 @@ export default function MyReservations() {
       <PageHeader
         title="My Reservations"
         description="Hold a specific unit for the date you need it."
-        actions={
-          <Link to="/catalog">
-            <Button variant="secondary">
-              <Icon name="arrow-left" className="h-4 w-4" />
-              Browse equipment
-            </Button>
-          </Link>
-        }
       />
       {error && (
         <div className="mb-4">
@@ -185,7 +176,7 @@ export default function MyReservations() {
             {waitlist.map((w) => (
               <div key={w.id} className="px-4 py-4 sm:px-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
+                  <div className="min-w-[12rem] flex-1">
                     <Link
                       to={`/items/${w.item.id}`}
                       className="text-sm font-bold text-slate-800 hover:text-primary-800 hover:underline"
@@ -226,8 +217,8 @@ export default function MyReservations() {
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <Badge tone={waitlistStatusTone[w.status] as never}>
+                  <div className="flex flex-wrap items-center justify-end gap-3">
+                    <Badge className="status-badge" tone={waitlistStatusTone[w.status] as never}>
                       {w.status === "WAITING" && w.position != null
                         ? `WAITING #${w.position}`
                         : w.status}
@@ -270,7 +261,7 @@ export default function MyReservations() {
             {shown.map((r) => (
               <div key={r.id} className="px-4 py-4 sm:px-5">
                 <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div className="min-w-0">
+                  <div className="min-w-[12rem] flex-1">
                     <Link
                       to={`/items/${r.item.id}`}
                       className="text-sm font-bold text-slate-800 hover:text-primary-800 hover:underline"
@@ -311,12 +302,13 @@ export default function MyReservations() {
                       </p>
                     )}
                   </div>
-                  <div className="flex flex-col items-end gap-2">
-                    <Badge tone={reservationStatusTone[r.status] as never}>
+                  <div className="flex flex-wrap items-center justify-end gap-3">
+                    <Badge className="status-badge" tone={reservationStatusTone[r.status] as never}>
                       {r.status}
                     </Badge>
                     {r.status === "PENDING" && (
                       <Button
+                        className="loan-action-button"
                         variant="danger"
                         size="sm"
                         onClick={() => cancel(r.id)}

@@ -258,45 +258,54 @@ export default function Catalog() {
               ? "Unavailable"
               : lowStock
                 ? `Only ${item.availableQuantity} left`
-                : `${item.availableQuantity} available`;
+                : "Available";
             return (
               <Link
                 key={item.id}
                 to={`/items/${item.id}`}
                 className="catalog-item group flex min-h-full flex-col border border-slate-200 bg-white shadow-sm transition-shadow hover:shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-900"
+                aria-label={`${item.name}, ${item.category.name}, ${availability}. ${
+                  available ? "View" : "Check it out"
+                }`}
                 style={{ animationDelay: `${index * 45}ms` }}
               >
+                <div className="p-4 pb-2">
+                  <h2 className="line-clamp-2 text-lg font-bold leading-tight text-slate-800">
+                    {item.name}
+                  </h2>
+                  <p className="mt-0.5 truncate text-xs text-slate-500">
+                    {item.category.name}
+                  </p>
+                </div>
                 <ItemImage
                   imageUrl={item.imageUrl}
                   categorySlug={item.category.slug}
                   alt={item.name}
-                  className="aspect-[4/3] w-full"
+                  className="catalog-item-image mx-4 aspect-[4/3] w-[calc(100%-2rem)]"
                   iconClassName="h-14 w-14"
                 />
-                <div className="flex flex-1 flex-col p-4">
-                  <h2 className="line-clamp-2 min-h-12 text-base font-semibold text-slate-800">
-                    {item.name}
-                  </h2>
-                  <p className="mt-1 min-h-5 truncate text-xs text-slate-500">
-                    {item.category.name}
-                  </p>
-                  <p
-                    className={`mt-auto pt-4 text-sm font-medium ${
-                      !available
-                        ? "text-slate-500"
-                        : lowStock
-                          ? "text-amber-700"
-                          : "text-green-700"
-                    }`}
-                  >
-                    {availability}
-                  </p>
-                  {user?.role === "ADMIN" && (
-                    <div className="mt-3 flex items-center justify-between border-t border-slate-200 pt-2 text-xs text-slate-500">
-                      <span className="font-mono">{item.code}</span>
-                      <span>{item.condition}</span>
-                    </div>
-                  )}
+                <div className="mt-auto flex items-center justify-between gap-3 p-4">
+                  <div className="min-w-0">
+                    <p
+                      className={`text-sm font-medium ${
+                        !available
+                          ? "text-slate-500"
+                          : lowStock
+                            ? "text-amber-700"
+                            : "text-green-700"
+                      }`}
+                    >
+                      {availability}
+                    </p>
+                    {user?.role === "ADMIN" && (
+                      <p className="mt-1 truncate text-[11px] text-slate-500">
+                        {item.code} · {item.condition}
+                      </p>
+                    )}
+                  </div>
+                  <span className="catalog-view-pill">
+                    {available ? "View" : "Check it out"}
+                  </span>
                 </div>
               </Link>
             );

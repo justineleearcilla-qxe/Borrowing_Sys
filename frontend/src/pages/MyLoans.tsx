@@ -69,7 +69,7 @@ function LoanRow({
       className={`px-4 py-4 sm:px-5 ${overdue ? "border-l-4 border-l-red-600" : due ? "border-l-4 border-l-amber-400" : ""}`}
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div className="min-w-0">
+        <div className="min-w-[12rem] flex-1">
           <Link
             to={`/items/${loan.item.id}`}
             className="text-sm font-bold text-slate-800 hover:text-primary-800 hover:underline"
@@ -105,12 +105,13 @@ function LoanRow({
             </p>
           )}
         </div>
-        <div className="flex flex-col items-end gap-2">
-          <Badge tone={loanStatusTone[loan.status] as never}>
+        <div className="flex flex-wrap items-center justify-end gap-3">
+          <Badge className="status-badge" tone={loanStatusTone[loan.status] as never}>
             {loan.status}
           </Badge>
           {loan.status === "PENDING" && (
             <Button
+              className="loan-action-button"
               variant="danger"
               size="sm"
               onClick={() => onCancel(loan.id)}
@@ -121,6 +122,7 @@ function LoanRow({
           )}
           {(loan.status === "BORROWED" || loan.status === "OVERDUE") && (
             <Button
+              className="loan-action-button"
               variant="success"
               size="sm"
               onClick={() => onReturn(loan.id)}
@@ -205,14 +207,6 @@ export default function MyLoans() {
       <PageHeader
         title="My Loans"
         description="Track your borrow requests and their current status."
-        actions={
-          <Link to="/catalog">
-            <Button variant="secondary">
-              <Icon name="arrow-left" className="h-4 w-4" />
-              Browse equipment
-            </Button>
-          </Link>
-        }
       />
       {error && (
         <div className="mb-4">

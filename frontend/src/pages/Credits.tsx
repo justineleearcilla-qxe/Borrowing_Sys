@@ -1,11 +1,9 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { api, apiErrorMessage } from "../api/client";
 import type { CreditsSummary, CreditTier } from "../types";
 import {
   Alert,
   Badge,
-  Button,
   Card,
   CardHeader,
   EmptyState,
@@ -91,14 +89,6 @@ export default function Credits() {
       <PageHeader
         title="Borrowing Credits"
         description="Your score and the privileges it unlocks."
-        actions={
-          <Link to="/catalog">
-            <Button variant="secondary">
-              <Icon name="arrow-left" className="h-4 w-4" />
-              Browse equipment
-            </Button>
-          </Link>
-        }
       />
 
       {!canBorrow && (

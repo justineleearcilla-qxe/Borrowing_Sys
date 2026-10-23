@@ -178,7 +178,7 @@ export default function AdminReservations() {
                       )}
                     </td>
                     <td className="td">
-                      <Badge tone={reservationStatusTone[r.status as ReservationStatus] as never}>
+                      <Badge className="status-badge" tone={reservationStatusTone[r.status as ReservationStatus] as never}>
                         {r.status}
                       </Badge>
                     </td>

@@ -154,7 +154,7 @@ export default function AdminScan() {
                   <p className="text-xl font-semibold text-slate-800">{result.item.name}</p>
                   <p className="mt-1 font-mono text-xs text-slate-500">{result.item.code}</p>
                   <div className="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
-                    <Badge tone={result.item.status === 'AVAILABLE' ? 'green' : 'yellow'}>{result.item.status}</Badge>
+                    <Badge className="status-badge" tone={result.item.status === 'AVAILABLE' ? 'green' : 'yellow'}>{result.item.status}</Badge>
                     <span>
                       {result.item.availableQuantity} of {result.item.totalQuantity} available
                     </span>
@@ -174,7 +174,7 @@ export default function AdminScan() {
                           <p className="text-xs text-slate-500">
                             Qty {l.quantity} - Return by {formatDate(l.returnDate)}
                           </p>
-                          <Badge tone={loanStatusTone[l.status] as never} className="mt-1">
+                          <Badge tone={loanStatusTone[l.status] as never} className="status-badge mt-1">
                             {l.status}
                           </Badge>
                         </div>

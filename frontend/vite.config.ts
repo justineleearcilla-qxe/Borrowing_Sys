@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     host: true,
-    port: 5173,
+    port: 8081,
     proxy: {
       "/api": "http://localhost:4000",
       "/uploads": "http://localhost:4000",

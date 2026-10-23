@@ -17,13 +17,9 @@ const mainNav = [
   { to: "/credits", label: "Borrowing Credits", icon: "chart" },
 ];
 
-// Admins and faculty share the reservation queue; everything else is admin-only.
-const staffNav = [
-  { to: "/admin/reservations", label: "Reservations", icon: "calendar" },
-];
-
 const adminNav = [
   { to: "/admin/requests", label: "Requests", icon: "inbox" },
+  { to: "/admin/reservations", label: "Reservations", icon: "calendar" },
   { to: "/admin/inventory", label: "Inventory", icon: "layers" },
   { to: "/admin/reports", label: "Reports", icon: "chart" },
 ];
@@ -33,14 +29,19 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
   const visibleMainNav =
     user?.role === "ADMIN"
       ? mainNav.filter((item) => item.to === "/dashboard")
-      : mainNav;
+      : user?.role === "FACULTY"
+        ? [
+            ...mainNav,
+            { to: "/admin/reservations", label: "Reservations", icon: "calendar" },
+          ]
+        : mainNav;
   const linkClass = ({ isActive }: { isActive: boolean }) =>
     `nav-link${isActive ? " nav-link-active" : ""}`;
   return (
     <nav className="flex-1 space-y-6 overflow-y-auto px-0 py-4">
       <div>
-        <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-          Main
+        <p className="sidebar-nav-label px-4 pb-2 text-[10px] font-bold uppercase tracking-widest">
+          Borrowing services
         </p>
         {visibleMainNav.map((n) => (
           <NavLink
@@ -55,27 +56,9 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
           </NavLink>
         ))}
       </div>
-      {user && (user.role === "ADMIN" || user.role === "FACULTY") && (
-        <div>
-          <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-            Equipment Desk
-          </p>
-          {staffNav.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              className={linkClass}
-              onClick={onNavigate}
-            >
-              <Icon name={n.icon} />
-              {n.label}
-            </NavLink>
-          ))}
-        </div>
-      )}
       {user?.role === "ADMIN" && (
         <div>
-          <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
+          <p className="sidebar-nav-label px-4 pb-2 text-[10px] font-bold uppercase tracking-widest">
             Administration
           </p>
           {adminNav.map((n) => (
@@ -100,11 +83,14 @@ function UserPanel() {
   const navigate = useNavigate();
   if (!user) return null;
   return (
-    <div className="border-t border-white/10 p-4">
+    <div className="sidebar-user-panel border-t border-white/10 p-4">
       <p className="truncate text-sm font-semibold text-white">{user.name}</p>
       <p className="truncate text-xs text-slate-400">{user.email}</p>
-      <div className="mt-2 flex items-center justify-between gap-2">
-        <Badge tone={user.role === "ADMIN" ? "blue" : "green"}>
+      <div className="sidebar-account-actions mt-3 grid grid-cols-2 gap-2">
+        <Badge
+          tone={user.role === "ADMIN" ? "blue" : "green"}
+          className="sidebar-role-badge"
+        >
           {user.role}
         </Badge>
         <button
@@ -326,8 +312,8 @@ export default function Layout() {
             <p className="text-lg font-bold tracking-tight text-white">
               EquipHub
             </p>
-            <p className="text-[11px] uppercase tracking-widest text-slate-400">
-              Campus equipment, simplified
+            <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-slate-300">
+              Campus equipment desk
             </p>
           </div>
           <div className="flex items-center gap-1">
@@ -352,7 +338,12 @@ export default function Layout() {
           />
           <aside className="absolute inset-y-0 left-0 flex w-64 flex-col rounded-none bg-primary-900 shadow-xl">
             <div className="flex items-center justify-between border-b border-primary-800 px-4 py-4">
-              <span className="text-lg font-bold text-white">EquipHub</span>
+              <div>
+                <span className="block text-lg font-bold text-white">EquipHub</span>
+                <span className="block text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-300">
+                  Campus equipment desk
+                </span>
+              </div>
               <div className="flex items-center gap-2">
                 <ThemeToggle variant="sidebar" />
                 <button

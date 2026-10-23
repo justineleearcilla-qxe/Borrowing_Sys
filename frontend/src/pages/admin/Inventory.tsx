@@ -212,7 +212,7 @@ export default function AdminInventory() {
                       <Badge tone={conditionTone[item.condition] as never}>{item.condition}</Badge>
                     </td>
                     <td className="td">
-                      <Badge tone={itemStatusTone[item.status] as never}>{item.status}</Badge>
+                      <Badge className="status-badge" tone={itemStatusTone[item.status] as never}>{item.status}</Badge>
                     </td>
                     <td className="td">
                       <div className="flex flex-wrap gap-1.5">

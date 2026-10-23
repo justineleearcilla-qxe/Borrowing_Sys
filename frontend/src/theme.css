@@ -18,6 +18,257 @@
  * hero banner); inverting them would make the primary button text invisible.
  */
 
+/* Light theme: campus navy, mist, and pearl with restrained semantic accents. */
+:root:not([data-theme="dark"]) {
+  --trial-background-canvas: #e5e8ee;
+  --trial-background-brand: #0f2a4a;
+  --trial-background-surface: #f6f5f0;
+  --light-ink: #24364b;
+  --light-muted: #53657a;
+  --light-border: #cbd5e1;
+  --light-control: #edf1f5;
+  --light-control-hover: #e2e9f1;
+  --light-success: #14543b;
+  --light-success-bg: #d7e9dd;
+  --light-success-border: #8fb59d;
+  --light-warning: #67460d;
+  --light-warning-bg: #f1e2bd;
+  --light-warning-border: #d2b367;
+  --light-danger: #762f35;
+  --light-danger-bg: #f0d8d5;
+  --light-danger-border: #ce9691;
+  --light-info: #1e466b;
+  --light-info-bg: #dce7f1;
+  --light-info-border: #9eb4cb;
+  color-scheme: light;
+}
+
+:root:not([data-theme="dark"]) body {
+  background-color: var(--trial-background-canvas);
+}
+
+:root:not([data-theme="dark"]) .card,
+:root:not([data-theme="dark"]) .catalog-item,
+:root:not([data-theme="dark"]) [class~="bg-white"]:not(button):not([role="button"]) {
+  background-color: var(--trial-background-surface);
+}
+
+:root:not([data-theme="dark"]) [class~="bg-primary-900/90"],
+:root:not([data-theme="dark"]) [class~="bg-primary-900"] {
+  background-color: var(--trial-background-brand);
+}
+
+:root:not([data-theme="dark"]) .btn-secondary {
+  border-color: var(--light-border);
+  background-color: var(--light-control);
+  color: var(--trial-background-brand);
+}
+
+:root:not([data-theme="dark"]) .btn-secondary:hover {
+  background-color: var(--light-control-hover);
+}
+
+:root:not([data-theme="dark"]) .btn-secondary:active {
+  background-color: #d8e1ea;
+}
+
+:root:not([data-theme="dark"]) .btn-success {
+  border-color: #176044;
+  background-color: #176044;
+  color: #fff;
+}
+
+:root:not([data-theme="dark"]) .btn-success:hover {
+  border-color: #104a34;
+  background-color: #104a34;
+}
+
+:root:not([data-theme="dark"]) .request-action-approve {
+  border-color: var(--light-success-border);
+  background-color: var(--light-success-bg);
+  color: var(--light-success);
+}
+
+:root:not([data-theme="dark"]) .request-action-approve:hover {
+  border-color: #78a88a;
+  background-color: #c5dfce;
+}
+
+:root:not([data-theme="dark"]) .btn-danger {
+  border-color: #923c43;
+  background-color: #923c43;
+  color: #fff;
+}
+
+:root:not([data-theme="dark"]) .btn-danger:hover {
+  border-color: #7d3037;
+  background-color: #7d3037;
+}
+
+:root:not([data-theme="dark"]) .request-action-reject {
+  border-color: var(--light-danger-border);
+  background-color: var(--light-danger-bg);
+  color: var(--light-danger);
+}
+
+:root:not([data-theme="dark"]) .request-action-reject:hover {
+  border-color: #bb7f7a;
+  background-color: #e8c5c1;
+}
+
+:root:not([data-theme="dark"]) .btn-ghost {
+  color: var(--light-muted);
+}
+
+:root:not([data-theme="dark"]) .btn-ghost:hover {
+  background-color: var(--light-control-hover);
+}
+
+:root:not([data-theme="dark"]) button.border-slate-300[class~="bg-white"] {
+  border-color: var(--light-border);
+  background-color: var(--light-control);
+  color: var(--trial-background-brand);
+}
+
+:root:not([data-theme="dark"]) button.border-slate-300[class~="bg-white"]:hover {
+  border-color: #aebfd0;
+  background-color: var(--light-control-hover);
+  color: var(--trial-background-brand);
+}
+
+:root:not([data-theme="dark"]) .admin-filter-tab {
+  color: var(--light-muted);
+}
+
+:root:not([data-theme="dark"]) .admin-filter-tab[class~="border-primary-800"][class~="bg-white"] {
+  border-color: var(--light-info-border);
+  background-color: var(--trial-background-surface);
+  color: var(--light-info);
+}
+
+:root:not([data-theme="dark"]) .input {
+  border-color: var(--light-border);
+  background-color: var(--trial-background-surface);
+  color: var(--light-ink);
+}
+
+:root:not([data-theme="dark"]) .input::placeholder {
+  color: var(--light-muted);
+}
+
+:root:not([data-theme="dark"]) .input:focus {
+  border-color: #426181;
+  background-color: #fbfaf7;
+}
+
+:root:not([data-theme="dark"]) .input:disabled {
+  background-color: #e9edf2;
+  color: var(--light-muted);
+}
+
+:root:not([data-theme="dark"]) .card {
+  border-color: #d5dde6;
+}
+
+:root:not([data-theme="dark"]) .card-header {
+  border-bottom-color: #d5dde6;
+}
+
+:root:not([data-theme="dark"]) .card-title,
+:root:not([data-theme="dark"]) .td {
+  color: var(--light-ink);
+}
+
+:root:not([data-theme="dark"]) .label,
+:root:not([data-theme="dark"]) .th {
+  color: var(--light-muted);
+}
+
+:root:not([data-theme="dark"]) .th {
+  background-color: #a9a9a9;
+  color: #263238;
+}
+
+:root:not([data-theme="dark"]) .bg-slate-50 {
+  background-color: #edf1f5;
+}
+
+:root:not([data-theme="dark"]) .bg-slate-100 {
+  background-color: #e9edf2;
+}
+
+:root:not([data-theme="dark"]) .bg-slate-200 {
+  background-color: #dce3eb;
+}
+
+:root:not([data-theme="dark"]) .border-slate-200,
+:root:not([data-theme="dark"]) .border-slate-300 {
+  border-color: var(--light-border);
+}
+
+:root:not([data-theme="dark"]) .badge-gray,
+:root:not([data-theme="dark"]) .badge-purple {
+  border-color: var(--light-border);
+  background-color: var(--light-control);
+  color: var(--light-muted);
+}
+
+:root:not([data-theme="dark"]) .badge-blue,
+:root:not([data-theme="dark"]) .bg-blue-50,
+:root:not([data-theme="dark"]) .bg-primary-50 {
+  border-color: var(--light-info-border);
+  background-color: var(--light-info-bg);
+  color: var(--light-info);
+}
+
+:root:not([data-theme="dark"]) .badge-green,
+:root:not([data-theme="dark"]) .bg-emerald-50 {
+  border-color: var(--light-success-border);
+  background-color: var(--light-success-bg);
+  color: var(--light-success);
+}
+
+:root:not([data-theme="dark"]) .badge-yellow,
+:root:not([data-theme="dark"]) .badge.request-status-pending,
+:root:not([data-theme="dark"]) .bg-amber-50,
+:root:not([data-theme="dark"]) .bg-orange-100 {
+  border-color: var(--light-warning-border);
+  background-color: var(--light-warning-bg);
+  color: var(--light-warning);
+}
+
+:root:not([data-theme="dark"]) .badge-red,
+:root:not([data-theme="dark"]) .bg-red-50 {
+  border-color: var(--light-danger-border);
+  background-color: var(--light-danger-bg);
+  color: var(--light-danger);
+}
+
+:root:not([data-theme="dark"]) .text-emerald-600,
+:root:not([data-theme="dark"]) .text-emerald-700,
+:root:not([data-theme="dark"]) .text-emerald-800,
+:root:not([data-theme="dark"]) .text-green-700 {
+  color: var(--light-success);
+}
+
+:root:not([data-theme="dark"]) .text-amber-700,
+:root:not([data-theme="dark"]) .text-amber-800,
+:root:not([data-theme="dark"]) .text-amber-900,
+:root:not([data-theme="dark"]) .text-orange-900 {
+  color: var(--light-warning);
+}
+
+:root:not([data-theme="dark"]) .text-red-600,
+:root:not([data-theme="dark"]) .text-red-700,
+:root:not([data-theme="dark"]) .text-red-800 {
+  color: var(--light-danger);
+}
+
+:root:not([data-theme="dark"]) .text-blue-900,
+:root:not([data-theme="dark"]) .text-primary-800 {
+  color: var(--light-info);
+}
+
 /* Lets native widgets (date pickers, scrollbars) render dark too. */
 [data-theme="dark"] {
   color-scheme: dark;
@@ -284,7 +535,8 @@
 }
 
 [data-theme="dark"] .th {
-  color: #94a3b8;
+  background-color: #a9a9a9;
+  color: #263238;
 }
 
 [data-theme="dark"] .td {
@@ -367,13 +619,14 @@
 }
 
 [data-theme="dark"] .sidebar-signout {
-  border-color: #b91c1c;
-  background-color: rgba(127, 29, 29, 0.45);
-  color: #fecaca;
+  border-color: rgba(203, 213, 225, 0.35);
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #e2e8f0;
 }
 
 [data-theme="dark"] .sidebar-signout:hover {
-  background-color: rgba(127, 29, 29, 0.65);
+  border-color: rgba(203, 213, 225, 0.55);
+  background-color: rgba(255, 255, 255, 0.12);
 }
 
 [data-theme="dark"] .badge-yellow {
