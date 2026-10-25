@@ -1,6 +1,6 @@
 # EquipHub - College Equipment Borrowing System
 
-A full-stack web application for managing equipment loans within a single college/school. Students and faculty browse equipment and submit borrow requests; staff/admins approve requests, manage inventory, scan QR codes for quick check-out/check-in, and export reports.
+A full-stack web application for managing equipment loans within a single college/school. Students and faculty browse equipment and submit borrow requests; staff/admins approve requests, manage inventory, use a manual check-out/return desk, and export reports.
 
 ## Tech Stack
 
@@ -11,7 +11,7 @@ A full-stack web application for managing equipment loans within a single colleg
 | Database      | PostgreSQL                                                          |
 | ORM           | Prisma                                                              |
 | Auth          | JWT + bcrypt hashing + role-based access (STUDENT/FACULTY vs ADMIN) |
-| Files/QR      | multer (image uploads), qrcode (item QR codes)                      |
+| Files         | multer (image uploads)                                               |
 | Notifications | Nodemailer (due-date reminders, overdue notices)                    |
 | Reports       | exceljs (Excel) + pdfkit (PDF)                                      |
 | Scheduling    | node-cron (hourly overdue sweep + reminders)                        |
@@ -25,7 +25,7 @@ A full-stack web application for managing equipment loans within a single colleg
 - **Due dates & reminders** - Hourly cron flags overdue loans, emails reminders 48h before due date, adds penalty points per offense, and blacklists repeat late returners at 6 points.
 - **Search & filter** - by name/code, category, availability, department.
 - **Dashboards** - student: active loans, due-soon alerts, request history; admin: totals, borrowed/overdue counts, most-borrowed category chart, pending queue, low-stock alerts.
-- **QR check-out/check-in** - every item has a downloadable QR code; admins scan via webcam (html5-qrcode) or type the code to resolve open loans instantly.
+- **Manual check-out/return desk** - search by item name, item code, or borrower name; review open loans and process check-outs and returns.
 - **Reports & analytics** - most borrowed items, frequency per department, damage/loss incidents - exportable to Excel and PDF.
 - **Auth** - public catalog browsing with school-domain-restricted actions (`@school.edu`), JWT sessions, role-based routes.
 
@@ -49,7 +49,7 @@ frontend/
     components/          # Layout, Icon, CategoryIcon, ui kit
     context/AuthContext.tsx
     pages/               # Login, Register, Dashboard, Catalog, ItemDetail, MyLoans
-    pages/admin/         # Requests, Inventory, Scan, Reports
+    pages/admin/         # Requests, Users, Inventory, Check-out desk, Reports
 docker-compose.yml
 ```
 
@@ -126,8 +126,6 @@ All endpoints are prefixed with `/api`. Authenticated calls use `Authorization: 
 | GET `/categories`             | any    | Categories with item counts                        |
 | GET `/items`                  | any    | List/filter/search items                           |
 | GET `/items/:id`              | any    | Item detail                                        |
-| GET `/items/:id/qrcode`       | public | PNG QR code encoding the item code                 |
-| GET `/items/code/:code`       | admin  | Resolve QR code -> item + open loans               |
 | POST/PUT/DELETE `/items...`   | admin  | Inventory CRUD                                     |
 | POST `/items/:id/image`       | admin  | Upload photo (multipart field `image`)             |
 | POST `/loans`                 | any    | Submit borrow request                              |

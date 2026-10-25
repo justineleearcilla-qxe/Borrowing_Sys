@@ -13,6 +13,17 @@ const TABS: Array<{ key: string; label: string }> = [
   { key: 'CANCELLED', label: 'Cancelled' },
 ]
 
+function localDateKey(value: string | Date): string {
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+    return value.slice(0, 10)
+  }
+  const date = value instanceof Date ? value : new Date(value)
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
 export default function AdminReservations() {
   const [status, setStatus] = useState<string>('PENDING')
   const [query, setQuery] = useState('')
@@ -23,6 +34,7 @@ export default function AdminReservations() {
   const [busyId, setBusyId] = useState<number | null>(null)
   const [rejecting, setRejecting] = useState<Reservation | null>(null)
   const [remarks, setRemarks] = useState('')
+  const todayKey = localDateKey(new Date())
 
   function load(s: string, q: string) {
     setLoading(true)
@@ -75,7 +87,7 @@ export default function AdminReservations() {
     <>
       <PageHeader
         title="Reservations"
-        description="Approve or reject future holds, then convert approved ones into loans at the desk."
+        description="Approve or reject future holds. Pickups due today or earlier are processed at Check-out / Return; early pickup remains available here."
       />
       {error && (
         <div className="mb-4">
@@ -84,14 +96,14 @@ export default function AdminReservations() {
       )}
 
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap gap-0 border-b border-slate-200">
+        <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 md:flex md:w-auto md:shrink-0 md:flex-wrap md:gap-0 md:border-b md:border-slate-200">
           {[{ key: 'ALL', label: 'All' }, ...TABS].map((t) => (
             <button
               key={t.key}
               onClick={() => setStatus(t.key)}
-              className={`-mb-px border px-4 py-2 text-sm font-semibold transition-colors ${
+              className={`min-w-0 whitespace-nowrap border px-3 py-2 text-sm font-semibold transition-colors sm:px-4 md:-mb-px md:shrink-0 ${
                 status === t.key
-                  ? 'border-primary-800 border-b-white bg-white text-primary-800'
+                  ? 'border-primary-800 bg-white text-primary-800 md:border-b-white'
                   : 'border-transparent bg-slate-50 text-slate-500 hover:text-slate-700'
               }`}
             >
@@ -100,7 +112,7 @@ export default function AdminReservations() {
           ))}
         </div>
         <form
-          className="flex items-center gap-2"
+          className="flex w-full min-w-0 items-center gap-2 sm:w-auto"
           onSubmit={(e) => {
             e.preventDefault()
             setSearch(query.trim())
@@ -111,7 +123,7 @@ export default function AdminReservations() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name, item or purpose..."
             aria-label="Search reservations"
-            className="w-64"
+            className="min-w-0 flex-1 sm:w-64 sm:flex-none"
           />
           <Button type="submit" variant="secondary" size="sm">
             Search
@@ -200,14 +212,20 @@ export default function AdminReservations() {
                           </>
                         )}
                         {r.status === 'APPROVED' && (
-                          <Button
-                            size="sm"
-                            variant="primary"
-                            onClick={() => pickup(r)}
-                            disabled={busyId === r.id}
-                          >
-                            {busyId === r.id ? 'Checking out...' : 'Mark picked up'}
-                          </Button>
+                          localDateKey(r.reservationDate) <= todayKey ? (
+                            <span className="text-xs text-slate-500">
+                              Use Check-out / Return for pickup
+                            </span>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="primary"
+                              onClick={() => pickup(r)}
+                              disabled={busyId === r.id}
+                            >
+                              {busyId === r.id ? 'Checking out...' : 'Mark picked up early'}
+                            </Button>
+                          )
                         )}
                       </div>
                     </td>
@@ -223,6 +241,7 @@ export default function AdminReservations() {
         open={Boolean(rejecting)}
         onClose={() => setRejecting(null)}
         title="Reject reservation"
+        showCloseButton={false}
         footer={
           <>
             <Button variant="secondary" onClick={() => setRejecting(null)}>
@@ -244,6 +263,7 @@ export default function AdminReservations() {
             onChange={(e) => setRemarks(e.target.value)}
             placeholder="e.g. Unit is booked that week..."
             maxLength={300}
+            className="reject-remarks"
           />
         </Field>
       </Modal>

@@ -5,6 +5,21 @@ import { conditionTone, itemStatusTone } from '../../lib/format'
 import { Alert, Badge, Button, Card, CardHeader, EmptyState, Field, Input, Modal, PageHeader, Select, Spinner, Textarea } from '../../components/ui'
 import { CategoryIcon } from '../../components/CategoryIcon'
 import { Icon } from '../../components/Icon'
+import { formatDateTime } from '../../lib/format'
+
+interface ItemLoanHistoryEntry {
+  id: number
+  borrowerName: string
+  quantity: number
+  borrowedAt: string
+  returnedAt: string | null
+  outcome: string | null
+}
+
+interface ItemLoanHistory {
+  totalTimesBorrowed: number
+  history: ItemLoanHistoryEntry[]
+}
 
 interface FormState {
   name: string
@@ -12,6 +27,7 @@ interface FormState {
   department: string
   totalQuantity: string
   availableQuantity: string
+  lowStockThreshold: string
   condition: string
   status: string
   description: string
@@ -23,6 +39,7 @@ const EMPTY_FORM: FormState = {
   department: '',
   totalQuantity: '1',
   availableQuantity: '',
+  lowStockThreshold: '1',
   condition: 'GOOD',
   status: 'AVAILABLE',
   description: '',
@@ -38,7 +55,10 @@ export default function AdminInventory() {
   const [creating, setCreating] = useState(false)
   const [form, setForm] = useState<FormState>(EMPTY_FORM)
   const [saving, setSaving] = useState(false)
-  const [qrItem, setQrItem] = useState<Item | null>(null)
+  const [historyItem, setHistoryItem] = useState<Item | null>(null)
+  const [history, setHistory] = useState<ItemLoanHistory | null>(null)
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [historyError, setHistoryError] = useState('')
   const fileRef = useRef<HTMLInputElement>(null)
 
   function load() {
@@ -72,6 +92,7 @@ export default function AdminInventory() {
       department: item.department ?? '',
       totalQuantity: String(item.totalQuantity),
       availableQuantity: String(item.availableQuantity),
+      lowStockThreshold: String(item.lowStockThreshold),
       condition: item.condition,
       status: item.status,
       description: item.description ?? '',
@@ -89,6 +110,7 @@ export default function AdminInventory() {
         department: form.department || undefined,
         totalQuantity: Number(form.totalQuantity),
         availableQuantity: form.availableQuantity === '' ? undefined : Number(form.availableQuantity),
+        lowStockThreshold: Number(form.lowStockThreshold),
         condition: form.condition,
         status: form.status,
         description: form.description || undefined,
@@ -132,11 +154,26 @@ export default function AdminInventory() {
     }
   }
 
+  async function openHistory(item: Item) {
+    setHistoryItem(item)
+    setHistory(null)
+    setHistoryError('')
+    setHistoryLoading(true)
+    try {
+      const res = await api.get<ItemLoanHistory>(`/items/${item.id}/history`)
+      setHistory(res.data)
+    } catch (e) {
+      setHistoryError(apiErrorMessage(e))
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
   return (
     <>
       <PageHeader
         title="Inventory Management"
-        description="Add, edit and retire equipment. Generate QR codes for quick check-out."
+        description="Add, edit and retire equipment, review borrowing history, and monitor stock."
         actions={
           <Button onClick={openCreate}>
             <Icon name="plus" className="h-4 w-4" />
@@ -208,13 +245,17 @@ export default function AdminInventory() {
                     </td>
                     <td className="td">
                       <div className="flex flex-wrap gap-1.5">
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          disabled={historyLoading}
+                          onClick={() => void openHistory(item)}
+                        >
+                          History
+                        </Button>
                         <Button variant="secondary" size="sm" onClick={() => openEdit(item)}>
                           <Icon name="edit" className="h-3.5 w-3.5" />
                           Edit
-                        </Button>
-                        <Button variant="secondary" size="sm" onClick={() => setQrItem(item)}>
-                          <Icon name="qr" className="h-3.5 w-3.5" />
-                          QR
                         </Button>
                         <Button
                           variant="danger"
@@ -243,6 +284,7 @@ export default function AdminInventory() {
         }}
         title={editing ? `Edit ${editing.name}` : 'Add new item'}
         wide
+        showCloseButton={false}
         footer={
           <>
             <Button
@@ -282,6 +324,18 @@ export default function AdminInventory() {
           <Field label="Available quantity">
             <Input type="number" min={0} value={form.availableQuantity} onChange={(e) => setForm((f) => ({ ...f, availableQuantity: e.target.value }))} placeholder="Defaults to total" />
           </Field>
+          <Field label="Low-stock alert threshold">
+            <Input
+              type="number"
+              min={0}
+              step={1}
+              required
+              value={form.lowStockThreshold}
+              onChange={(e) =>
+                setForm((f) => ({ ...f, lowStockThreshold: e.target.value }))
+              }
+            />
+          </Field>
           <Field label="Condition">
             <Select value={form.condition} onChange={(e) => setForm((f) => ({ ...f, condition: e.target.value }))}>
               <option value="NEW">New</option>
@@ -305,7 +359,7 @@ export default function AdminInventory() {
             <div className="sm:col-span-2">
               <Field label="Photo">
                 <div className="flex flex-wrap items-center gap-3">
-                  <input ref={fileRef} type="file" accept="image/*" className="input cursor-pointer py-1.5 file:mr-3 file:border-0 file:bg-slate-100 file:px-3 file:py-1.5 file:text-xs file:font-semibold" />
+                  <input ref={fileRef} type="file" accept="image/*" className="input cursor-pointer py-1.5 file:mr-3 file:border-0 file:bg-primary-800 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-primary-700" />
                   <Button variant="secondary" size="sm" onClick={uploadImage} disabled={saving}>
                     Upload
                   </Button>
@@ -317,20 +371,60 @@ export default function AdminInventory() {
         </div>
       </Modal>
 
-      <Modal open={Boolean(qrItem)} onClose={() => setQrItem(null)} title={`QR code - ${qrItem?.name ?? ''}`}>
-        {qrItem && (
-          <div className="flex flex-col items-center gap-3">
-            <img src={`/api/items/${qrItem.id}/qrcode`} alt={`QR code for ${qrItem.name}`} className="h-64 w-64 border border-slate-200 bg-white p-2" />
-            <p className="font-mono text-sm font-bold tracking-wider text-slate-700">{qrItem.code}</p>
-            <a href={`/api/items/${qrItem.id}/qrcode`} download={`${qrItem.code}.png`}>
-              <Button variant="secondary" size="sm">
-                Download PNG
-              </Button>
-            </a>
-            <p className="text-center text-xs text-slate-400">Print and attach this QR code to the physical item so staff can scan it during check-out and check-in.</p>
+      <Modal
+        open={Boolean(historyItem)}
+        onClose={() => setHistoryItem(null)}
+        title={`Borrowing history - ${historyItem?.name ?? ''}`}
+        wide
+      >
+        {historyLoading ? (
+          <div className="flex justify-center py-8 text-primary-800">
+            <Spinner className="h-7 w-7" />
           </div>
-        )}
+        ) : historyError ? (
+          <Alert tone="error">{historyError}</Alert>
+        ) : history ? (
+          <>
+            <p className="text-sm font-semibold text-slate-700">
+              Times borrowed:{" "}
+              <span className="tabular-nums">{history.totalTimesBorrowed}</span>
+            </p>
+            {history.history.length === 0 ? (
+              <EmptyState title="No checkout history yet" />
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[600px]">
+                  <thead className="border-b border-slate-200 bg-slate-50">
+                    <tr>
+                      <th className="th">Borrower</th>
+                      <th className="th">Quantity</th>
+                      <th className="th">Borrowed</th>
+                      <th className="th">Returned</th>
+                      <th className="th">Outcome</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {history.history.map((entry) => (
+                      <tr key={entry.id}>
+                        <td className="td font-medium">{entry.borrowerName}</td>
+                        <td className="td tabular-nums">{entry.quantity}</td>
+                        <td className="td whitespace-nowrap text-xs">
+                          {formatDateTime(entry.borrowedAt)}
+                        </td>
+                        <td className="td whitespace-nowrap text-xs">
+                          {formatDateTime(entry.returnedAt)}
+                        </td>
+                        <td className="td">{entry.outcome ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        ) : null}
       </Modal>
+
     </>
   )
 }

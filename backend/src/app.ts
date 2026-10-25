@@ -16,6 +16,7 @@ import notificationRoutes from './routes/notifications'
 import creditRoutes from './routes/credits'
 import dashboardRoutes from './routes/dashboard'
 import reportRoutes from './routes/reports'
+import userRoutes from './routes/users'
 
 export function createApp() {
   const app = express()
@@ -38,6 +39,7 @@ export function createApp() {
   app.use('/api/credits', creditRoutes)
   app.use('/api/dashboard', dashboardRoutes)
   app.use('/api/reports', reportRoutes)
+  app.use('/api/users', userRoutes)
 
   app.use((_req, _res, next) => next(new ApiError(404, 'Not found')))
   app.use(errorHandler)

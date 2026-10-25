@@ -1,11 +1,10 @@
 import { FormEvent, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Alert, Button, Field, Input, Select } from "../components/ui";
 
 export default function Register() {
   const { register } = useAuth();
-  const navigate = useNavigate();
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -15,6 +14,7 @@ export default function Register() {
     department: "",
   });
   const [error, setError] = useState("");
+  const [registered, setRegistered] = useState(false);
   const [busy, setBusy] = useState(false);
 
   function set<K extends keyof typeof form>(key: K, value: string) {
@@ -37,7 +37,7 @@ export default function Register() {
         role: form.role,
         department: form.department || undefined,
       });
-      navigate("/dashboard");
+      setRegistered(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
@@ -54,6 +54,20 @@ export default function Register() {
             Registration requires a valid school email address
           </p>
         </div>
+        {registered ? (
+          <div className="card space-y-4 p-6">
+            <Alert tone="success">
+              Registration submitted. Your account must be approved by an
+              administrator before you can sign in.
+            </Alert>
+            <Link
+              to="/login"
+              className="block text-center font-semibold text-primary-800 hover:underline"
+            >
+              Return to sign in
+            </Link>
+          </div>
+        ) : (
         <form onSubmit={onSubmit} className="card space-y-4 p-6">
           {error && <Alert tone="error">{error}</Alert>}
           <Field label="Full name">
@@ -125,6 +139,7 @@ export default function Register() {
             </Link>
           </p>
         </form>
+        )}
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 export type Role = 'STUDENT' | 'FACULTY' | 'ADMIN'
+export type UserStatus = 'PENDING' | 'ACTIVE' | 'INACTIVE'
 export type LoanStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'BORROWED' | 'RETURNED' | 'OVERDUE'
 export type ReservationStatus =
   | 'PENDING'
@@ -17,9 +18,11 @@ export interface User {
   name: string
   email: string
   role: Role
+  status: UserStatus
   department: string | null
   isBlacklisted: boolean
   penaltyPoints: number
+  overdueLoanCount?: number
 }
 
 export interface Category {
@@ -40,6 +43,7 @@ export interface Item {
   category: Category
   totalQuantity: number
   availableQuantity: number
+  lowStockThreshold: number
   condition: ItemCondition
   status: ItemStatus
   department: string | null
@@ -155,6 +159,7 @@ export interface StudentDashboard {
   activeLoans: number
   overdueCount: number
   totalRequests: number
+  dueSoonCount: number
   dueSoon: Loan[]
   recent: Loan[]
 }
@@ -168,13 +173,12 @@ export interface AdminDashboard {
   borrowedCount: number
   overdueCount: number
   pendingQueue: Loan[]
+  dueLoans: Loan[]
+  pendingReservations: Reservation[]
   categoryBreakdown: Array<{ name: string; units: number; count: number }>
+  borrowingHistory: Array<{ month: string; units: number }>
+  lowStockCount: number
   lowStock: Item[]
-}
-
-export interface ScanResult {
-  item: Item
-  openLoans: Loan[]
 }
 
 export type CreditTierKey =

@@ -13,6 +13,12 @@ enum Role {
   ADMIN
 }
 
+enum UserStatus {
+  PENDING
+  ACTIVE
+  INACTIVE
+}
+
 enum ItemStatus {
   AVAILABLE
   MAINTENANCE
@@ -76,6 +82,7 @@ model User {
   email         String   @unique
   passwordHash  String
   role          Role     @default(STUDENT)
+  status        UserStatus @default(ACTIVE)
   department    String?
   isBlacklisted Boolean  @default(false)
   penaltyPoints Int      @default(0)
@@ -108,6 +115,7 @@ model Item {
   category          Category      @relation(fields: [categoryId], references: [id])
   totalQuantity     Int
   availableQuantity Int
+  lowStockThreshold Int           @default(1)
   condition         ItemCondition @default(GOOD)
   status            ItemStatus    @default(AVAILABLE)
   department        String?

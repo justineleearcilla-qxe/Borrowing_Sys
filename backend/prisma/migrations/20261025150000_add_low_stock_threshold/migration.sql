@@ -1,0 +1,2 @@
+ALTER TABLE "Item"
+ADD COLUMN "lowStockThreshold" INTEGER NOT NULL DEFAULT 1;

@@ -63,11 +63,15 @@ router.post(
         email: normalizedEmail,
         passwordHash,
         role: selectedRole,
+        status: "PENDING",
         department: departmentName,
       },
     });
 
-    res.status(201).json({ token: signToken(user), user: sanitizeUser(user) });
+    res.status(201).json({
+      message: "Registration submitted. An administrator must approve your account before you can sign in.",
+      user: sanitizeUser(user),
+    });
   }),
 );
 
@@ -95,6 +99,12 @@ router.post(
     if (!user) throw new ApiError(401, "Invalid email or password");
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) throw new ApiError(401, "Invalid email or password");
+    if (user.status === "PENDING") {
+      throw new ApiError(403, "Your account is pending administrator approval.");
+    }
+    if (user.status === "INACTIVE") {
+      throw new ApiError(403, "Your account is inactive. Contact an administrator for help.");
+    }
     res.json({ token: signToken(user), user: sanitizeUser(user) });
   }),
 );
