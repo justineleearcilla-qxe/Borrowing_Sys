@@ -216,6 +216,10 @@
   color: #e2e8f0;
 }
 
+[data-theme="dark"] .reject-remarks {
+  color: #fff;
+}
+
 [data-theme="dark"] .input::placeholder {
   color: #64748b;
 }

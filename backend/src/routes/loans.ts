@@ -201,11 +201,22 @@ router.get(
       },
       orderBy: { createdAt: "desc" },
     });
+    const overdueCounts = await prisma.loan.groupBy({
+      by: ["userId"],
+      where: { status: "OVERDUE" },
+      _count: { _all: true },
+    });
+    const overdueByUser = new Map(
+      overdueCounts.map((row) => [row.userId, row._count._all]),
+    );
     if ((status ?? "PENDING") === "PENDING") loans = loans.slice().reverse();
     res.json(
       loans.map(({ user, decidedBy, ...l }) => ({
         ...l,
-        user: sanitizeUser(user),
+        user: {
+          ...sanitizeUser(user),
+          overdueLoanCount: overdueByUser.get(user.id) ?? 0,
+        },
         decidedBy: decidedBy ? sanitizeUser(decidedBy) : null,
       })),
     );

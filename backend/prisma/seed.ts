@@ -373,6 +373,7 @@ async function main() {
       name: "Avery Admin",
       passwordHash,
       role: "ADMIN",
+      status: "ACTIVE",
       department: "IT Services",
     },
     create: {
@@ -380,6 +381,7 @@ async function main() {
       email: "admin@school.edu",
       passwordHash,
       role: "ADMIN",
+      status: "ACTIVE",
       department: "IT Services",
     },
   });
@@ -389,6 +391,7 @@ async function main() {
       name: "Maria Santos",
       passwordHash,
       role: "STUDENT",
+      status: "ACTIVE",
       department: "Computer Science",
     },
     create: {
@@ -396,6 +399,7 @@ async function main() {
       email: "maria.student@school.edu",
       passwordHash,
       role: "STUDENT",
+      status: "ACTIVE",
       department: "Computer Science",
     },
   });
@@ -405,6 +409,7 @@ async function main() {
       name: "Dr. David Cruz",
       passwordHash,
       role: "FACULTY",
+      status: "ACTIVE",
       department: "Biology",
       penaltyPoints: 2,
     },
@@ -413,6 +418,7 @@ async function main() {
       email: "david.faculty@school.edu",
       passwordHash,
       role: "FACULTY",
+      status: "ACTIVE",
       department: "Biology",
       penaltyPoints: 2,
     },

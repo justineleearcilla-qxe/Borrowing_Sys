@@ -167,6 +167,7 @@ export function Modal({
   children,
   footer,
   wide,
+  showCloseButton = true,
 }: {
   open: boolean;
   onClose: () => void;
@@ -174,6 +175,7 @@ export function Modal({
   children: ReactNode;
   footer?: ReactNode;
   wide?: boolean;
+  showCloseButton?: boolean;
 }) {
   if (!open) return null;
   return (
@@ -189,13 +191,15 @@ export function Modal({
       >
         <div className="card-header">
           <h2 className="card-title">{title}</h2>
-          <button
-            onClick={onClose}
-            className="btn btn-ghost btn-sm"
-            aria-label="Close"
-          >
-            Close
-          </button>
+          {showCloseButton && (
+            <button
+              onClick={onClose}
+              className="btn btn-ghost btn-sm"
+              aria-label="Close"
+            >
+              Close
+            </button>
+          )}
         </div>
         <div className="card-body space-y-4">{children}</div>
         {footer && (
@@ -254,11 +258,13 @@ export function StatCard({
   value,
   tone = "default",
   hint,
+  className,
 }: {
   label: string;
   value: ReactNode;
   tone?: "default" | "red" | "green" | "amber";
   hint?: string;
+  className?: string;
 }) {
   const tones = {
     default: "text-primary-800",
@@ -267,7 +273,7 @@ export function StatCard({
     amber: "text-amber-600",
   } as const;
   return (
-    <Card className="p-4 sm:p-5">
+    <Card className={clsx("p-4 sm:p-5", className)}>
       <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
         {label}
       </p>

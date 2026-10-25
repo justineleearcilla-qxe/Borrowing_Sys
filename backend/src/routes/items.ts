@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
 import { Router } from "express";
-import QRCode from "qrcode";
 import {
   ItemCondition,
   ItemStatus,
@@ -160,46 +159,84 @@ router.get(
 );
 
 router.get(
-  "/code/:code",
+  "/desk-search",
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const item = await prisma.item.findUnique({
-      where: { code: req.params.code.trim().toUpperCase() },
-      include: { category: true },
+    const query = reqStr(req.query.q, "Search", { min: 1, max: 100 });
+    const openLoanWhere: Prisma.LoanWhereInput = {
+      status: { in: ACTIVE_STATUSES },
+    };
+    const items = await prisma.item.findMany({
+      where: {
+        OR: [
+          { name: { contains: query, mode: "insensitive" } },
+          { code: { contains: query, mode: "insensitive" } },
+          {
+            loans: {
+              some: {
+                ...openLoanWhere,
+                user: { name: { contains: query, mode: "insensitive" } },
+              },
+            },
+          },
+        ],
+      },
+      include: {
+        category: true,
+        loans: {
+          where: openLoanWhere,
+          include: { user: true },
+          orderBy: { createdAt: "desc" },
+        },
+      },
+      orderBy: { name: "asc" },
+      take: 30,
     });
-    if (!item)
-      throw new ApiError(404, `No item found with code "${req.params.code}"`);
-    const openLoans = await prisma.loan.findMany({
-      where: { itemId: item.id, status: { in: ACTIVE_STATUSES } },
-      include: { user: true },
-      orderBy: { createdAt: "asc" },
-    });
-    res.json({
-      item,
-      openLoans: openLoans.map(({ user, ...l }) => ({
-        ...l,
-        user: sanitizeUser(user),
+    res.json(
+      items.map(({ loans, ...item }) => ({
+        item,
+        openLoans: loans.map(({ user, ...loan }) => ({
+          ...loan,
+          user: sanitizeUser(user),
+        })),
       })),
-    });
+    );
   }),
 );
 
 router.get(
-  "/:id/qrcode",
+  "/:id/history",
+  requireAuth,
+  requireAdmin,
   asyncHandler(async (req, res) => {
+    const id = parseId(req.params.id);
     const item = await prisma.item.findUnique({
-      where: { id: parseId(req.params.id) },
+      where: { id },
+      select: { id: true },
     });
     if (!item) throw new ApiError(404, "Item not found");
-    const buf = await QRCode.toBuffer(item.code, {
-      width: 512,
-      margin: 2,
-      errorCorrectionLevel: "M",
+
+    const loans = await prisma.loan.findMany({
+      where: { itemId: id, borrowedAt: { not: null } },
+      select: {
+        id: true,
+        quantity: true,
+        borrowedAt: true,
+        returnedAt: true,
+        outcome: true,
+        user: { select: { name: true } },
+      },
+      orderBy: [{ borrowedAt: "desc" }, { id: "desc" }],
     });
-    res.setHeader("Content-Type", "image/png");
-    res.setHeader("Cache-Control", "public, max-age=86400");
-    res.send(buf);
+
+    res.json({
+      totalTimesBorrowed: loans.length,
+      history: loans.map(({ user, ...loan }) => ({
+        ...loan,
+        borrowerName: user.name,
+      })),
+    });
   }),
 );
 
@@ -221,6 +258,7 @@ interface ItemBody {
   categoryId?: unknown;
   totalQuantity?: unknown;
   availableQuantity?: unknown;
+  lowStockThreshold?: unknown;
   condition?: unknown;
   status?: unknown;
   department?: unknown;
@@ -261,6 +299,10 @@ router.post(
     const department = optStr(b.department, "Department", 80);
 
     const totalQuantity = parseQuantity(b.totalQuantity ?? 1, "Total quantity");
+    const lowStockThreshold = asInt(b.lowStockThreshold ?? 1, "Low-stock threshold", {
+      min: 0,
+      max: 100000,
+    })!;
     let availableQuantity =
       b.availableQuantity === undefined || b.availableQuantity === ""
         ? totalQuantity
@@ -275,6 +317,7 @@ router.post(
         categoryId,
         totalQuantity,
         availableQuantity,
+        lowStockThreshold,
         condition: validateCondition(b.condition) ?? "GOOD",
         status: validateStatus(b.status) ?? "AVAILABLE",
         department,
@@ -310,6 +353,12 @@ router.put(
       data.description = optStr(b.description, "Description", 2000);
     if (b.department !== undefined)
       data.department = optStr(b.department, "Department", 80);
+    if (b.lowStockThreshold !== undefined) {
+      data.lowStockThreshold = asInt(b.lowStockThreshold, "Low-stock threshold", {
+        min: 0,
+        max: 100000,
+      })!;
+    }
 
     if (b.categoryId !== undefined) {
       const catId = asInt(b.categoryId, "Category", { min: 1 });

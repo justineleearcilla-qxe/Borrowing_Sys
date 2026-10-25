@@ -6,6 +6,7 @@ export function sanitizeUser(user: User) {
     name: user.name,
     email: user.email,
     role: user.role,
+    status: user.status,
     department: user.department,
     isBlacklisted: user.isBlacklisted,
     penaltyPoints: user.penaltyPoints,

@@ -21,8 +21,9 @@ import Cart from "./pages/Cart";
 import AdminRequests from "./pages/admin/Requests";
 import AdminInventory from "./pages/admin/Inventory";
 import AdminReservations from "./pages/admin/Reservations";
-import AdminScan from "./pages/admin/Scan";
+import AdminCheckoutDesk from "./pages/admin/CheckoutDesk";
 import AdminReports from "./pages/admin/Reports";
+import AdminUsers from "./pages/admin/Users";
 
 function RequireAuth() {
   const { user, loading } = useAuth();
@@ -84,8 +85,9 @@ export default function App() {
                 </Route>
                 <Route element={<RequireAdmin />}>
                   <Route path="admin/requests" element={<AdminRequests />} />
+                  <Route path="admin/users" element={<AdminUsers />} />
                   <Route path="admin/inventory" element={<AdminInventory />} />
-                  <Route path="admin/scan" element={<AdminScan />} />
+                  <Route path="admin/scan" element={<AdminCheckoutDesk />} />
                   <Route path="admin/reports" element={<AdminReports />} />
                 </Route>
               </Route>

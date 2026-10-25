@@ -57,10 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = useCallback(
     async (payload: { name: string; email: string; password: string; role: string; department?: string }) => {
       try {
-        const res = await api.post('/auth/register', payload)
-        localStorage.setItem('token', res.data.token)
-        localStorage.setItem('user', JSON.stringify(res.data.user))
-        setUser(res.data.user)
+        await api.post('/auth/register', payload)
       } catch (e) {
         throw new Error(apiErrorMessage(e, 'Registration failed'))
       }

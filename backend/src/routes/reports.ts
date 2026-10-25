@@ -39,7 +39,7 @@ async function buildSummary() {
 
 async function buildMostBorrowed() {
   const loans = await prisma.loan.findMany({
-    where: { status: { not: 'REJECTED' } },
+    where: { borrowedAt: { not: null } },
     include: { item: { include: { category: true } } },
   })
   const sums = new Map<number, { code: string; name: string; category: string; timesBorrowed: number; units: number }>()

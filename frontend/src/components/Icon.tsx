@@ -42,17 +42,6 @@ const paths: Record<string, ReactNode> = {
       <path d="m3 17 9 5 9-5" />
     </>
   ),
-  qr: (
-    <>
-      <rect x="3" y="3" width="7" height="7" />
-      <rect x="14" y="3" width="7" height="7" />
-      <rect x="3" y="14" width="7" height="7" />
-      <path d="M14 14h3v3h-3z" />
-      <path d="M21 14v3" />
-      <path d="M14 21h3" />
-      <path d="M21 21h.01" />
-    </>
-  ),
   chart: (
     <>
       <path d="M3 3v18h18" />
@@ -104,12 +93,6 @@ const paths: Record<string, ReactNode> = {
       <path d="M4 7h16" />
       <path d="M9 7V4h6v3" />
       <path d="M6 7l1 14h10l1-14" />
-    </>
-  ),
-  camera: (
-    <>
-      <path d="M4 8h3l2-3h6l2 3h3v12H4V8Z" />
-      <circle cx="12" cy="13" r="3.5" />
     </>
   ),
   warning: (

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, apiErrorMessage } from '../../api/client'
 import type { Loan, LoanStatus } from '../../types'
 import { formatDate, loanStatusTone } from '../../lib/format'
-import { Alert, Badge, Button, Card, CardHeader, EmptyState, Field, Modal, PageHeader, Select, Spinner, Textarea } from '../../components/ui'
+import { Alert, Badge, Button, Card, CardHeader, EmptyState, Field, Modal, PageHeader, Spinner, Textarea } from '../../components/ui'
 
 const TABS: Array<{ key: string; label: string }> = [
   { key: 'PENDING', label: 'Pending' },
@@ -21,9 +21,6 @@ export default function AdminRequests() {
   const [busyId, setBusyId] = useState<number | null>(null)
   const [rejectLoan, setRejectLoan] = useState<Loan | null>(null)
   const [rejectRemarks, setRejectRemarks] = useState('')
-  const [returnLoan, setReturnLoan] = useState<Loan | null>(null)
-  const [returnOutcome, setReturnOutcome] = useState('OK')
-  const [returnNote, setReturnNote] = useState('')
 
   function load(s: string) {
     setLoading(true)
@@ -52,8 +49,6 @@ export default function AdminRequests() {
   }
 
   const approve = (l: Loan) => act(l.id, () => api.patch(`/loans/${l.id}/decide`, { action: 'approve' }))
-  const checkout = (l: Loan) => act(l.id, () => api.patch(`/loans/${l.id}/checkout`))
-
   async function submitReject() {
     if (!rejectLoan) return
     const loan = rejectLoan
@@ -62,31 +57,22 @@ export default function AdminRequests() {
     setRejectRemarks('')
   }
 
-  async function submitReturn() {
-    if (!returnLoan) return
-    const loan = returnLoan
-    setReturnLoan(null)
-    await act(loan.id, () => api.patch(`/loans/${loan.id}/return`, { outcome: returnOutcome, note: returnNote || undefined }))
-    setReturnNote('')
-    setReturnOutcome('OK')
-  }
-
   return (
     <>
-      <PageHeader title="Borrow Requests" description="Approve or reject requests, check out approved loans, and process returns." />
+      <PageHeader title="Borrow Requests" description="Review and approve or reject loan requests. Use Check-out / Return for pickups and returns." />
       {error && (
         <div className="mb-4">
           <Alert tone="error">{error}</Alert>
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap gap-0 border-b border-slate-200">
+      <div className="mb-4 grid w-full grid-cols-2 gap-2 sm:grid-cols-3 md:flex md:flex-wrap md:gap-0 md:border-b md:border-slate-200">
         {[{ key: 'ALL', label: 'All' }, ...TABS].map((t) => (
           <button
             key={t.key}
             onClick={() => setStatus(t.key)}
-            className={`-mb-px border px-4 py-2 text-sm font-semibold transition-colors ${
-              status === t.key ? 'border-primary-800 border-b-white bg-white text-primary-800' : 'border-transparent bg-slate-50 text-slate-500 hover:text-slate-700'
+            className={`min-w-0 whitespace-nowrap border px-3 py-2 text-sm font-semibold transition-colors sm:px-4 md:-mb-px md:shrink-0 ${
+              status === t.key ? 'border-primary-800 bg-white text-primary-800 md:border-b-white' : 'border-transparent bg-slate-50 text-slate-500 hover:text-slate-700'
             }`}
           >
             {t.label}
@@ -121,7 +107,17 @@ export default function AdminRequests() {
                 {loans.map((l) => (
                   <tr key={l.id} className={l.status === 'OVERDUE' ? 'bg-red-50/50' : undefined}>
                     <td className="td">
-                      <p className="font-semibold text-slate-800">{l.user?.name}</p>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <p className="font-semibold text-slate-800">{l.user?.name}</p>
+                        {(l.user?.isBlacklisted ||
+                          (l.user?.overdueLoanCount ?? 0) > 0) && (
+                          <Badge tone="red">
+                            {l.user?.isBlacklisted
+                              ? "Blacklisted"
+                              : `${l.user?.overdueLoanCount} overdue`}
+                          </Badge>
+                        )}
+                      </div>
                       <p className="text-xs text-slate-400">{l.user?.email}</p>
                       <p className="text-xs text-slate-400">{l.user?.department ?? 'No department'}</p>
                     </td>
@@ -157,14 +153,10 @@ export default function AdminRequests() {
                           </>
                         )}
                         {l.status === 'APPROVED' && (
-                          <Button size="sm" disabled={busyId === l.id} onClick={() => checkout(l)}>
-                            Mark borrowed
-                          </Button>
+                          <span className="text-xs text-slate-500">Use Check-out / Return for pickup</span>
                         )}
                         {(l.status === 'BORROWED' || l.status === 'OVERDUE') && (
-                          <Button variant="secondary" size="sm" disabled={busyId === l.id} onClick={() => { setReturnLoan(l); setReturnOutcome('OK'); setReturnNote('') }}>
-                            Process return
-                          </Button>
+                          <span className="text-xs text-slate-500">Use Check-out / Return for return</span>
                         )}
                         {['RETURNED', 'REJECTED'].includes(l.status) && <span className="text-xs text-slate-300">No actions</span>}
                       </div>
@@ -181,6 +173,7 @@ export default function AdminRequests() {
         open={Boolean(rejectLoan)}
         onClose={() => setRejectLoan(null)}
         title={`Reject request #${rejectLoan?.id ?? ''}`}
+        showCloseButton={false}
         footer={
           <>
             <Button variant="secondary" onClick={() => setRejectLoan(null)}>
@@ -197,40 +190,16 @@ export default function AdminRequests() {
           <span className="font-semibold">{rejectLoan?.user?.name}</span>.
         </p>
         <Field label="Remarks (optional)">
-          <Textarea value={rejectRemarks} onChange={(e) => setRejectRemarks(e.target.value)} placeholder="Reason shown to the requester..." />
+          <Textarea
+            value={rejectRemarks}
+            onChange={(e) => setRejectRemarks(e.target.value)}
+            placeholder="Reason shown to the requester..."
+            maxLength={300}
+            className="reject-remarks"
+          />
         </Field>
       </Modal>
 
-      <Modal
-        open={Boolean(returnLoan)}
-        onClose={() => setReturnLoan(null)}
-        title={`Process return #${returnLoan?.id ?? ''}`}
-        footer={
-          <>
-            <Button variant="secondary" onClick={() => setReturnLoan(null)}>
-              Cancel
-            </Button>
-            <Button variant="success" onClick={submitReturn}>
-              Confirm return
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-slate-600">
-          Returning <span className="font-semibold">{returnLoan?.item.name}</span> x{returnLoan?.quantity} from{' '}
-          <span className="font-semibold">{returnLoan?.user?.name}</span>.
-        </p>
-        <Field label="Item condition on return">
-          <Select value={returnOutcome} onChange={(e) => setReturnOutcome(e.target.value)}>
-            <option value="OK">OK - no issues</option>
-            <option value="DAMAGED">Damaged</option>
-            <option value="LOST">Lost (remove from inventory)</option>
-          </Select>
-        </Field>
-        <Field label="Note (optional)">
-          <Textarea value={returnNote} onChange={(e) => setReturnNote(e.target.value)} placeholder="Details about damage or loss..." />
-        </Field>
-      </Modal>
     </>
   )
 }

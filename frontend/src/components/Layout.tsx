@@ -17,16 +17,17 @@ const mainNav = [
   { to: "/credits", label: "Borrowing Credits", icon: "chart" },
 ];
 
-// Admins and faculty share the reservation queue; everything else is admin-only.
 const staffNav = [
   { to: "/admin/reservations", label: "Reservations", icon: "calendar" },
 ];
 
 const adminNav = [
+  { to: "/admin/scan", label: "Check-out / Return", icon: "clipboard" },
   { to: "/admin/requests", label: "Requests", icon: "inbox" },
+  { to: "/admin/reservations", label: "Reservations", icon: "calendar" },
   { to: "/admin/inventory", label: "Inventory", icon: "layers" },
-  { to: "/admin/scan", label: "Scan / Check-out", icon: "qr" },
   { to: "/admin/reports", label: "Reports", icon: "chart" },
+  { to: "/admin/users", label: "Users", icon: "home" },
 ];
 
 function NavItems({ onNavigate }: { onNavigate?: () => void }) {
@@ -39,20 +40,22 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
         <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
           Main
         </p>
-        {mainNav.map((n) => (
-          <NavLink
-            key={n.to}
-            to={n.to}
-            end={n.end}
-            className={linkClass}
-            onClick={onNavigate}
-          >
-            <Icon name={n.icon} />
-            {n.label}
-          </NavLink>
-        ))}
+        {mainNav
+          .filter((n) => user?.role !== "ADMIN" || n.to === "/dashboard")
+          .map((n) => (
+            <NavLink
+              key={n.to}
+              to={n.to}
+              end={n.end}
+              className={linkClass}
+              onClick={onNavigate}
+            >
+              <Icon name={n.icon} />
+              {n.label}
+            </NavLink>
+          ))}
       </div>
-      {user && (user.role === "ADMIN" || user.role === "FACULTY") && (
+      {user?.role === "FACULTY" && (
         <div>
           <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
             Equipment Desk

@@ -16,6 +16,9 @@ export async function requireAuth(req: Request, _res: Response, next: NextFuncti
     }
     const user = await prisma.user.findUnique({ where: { id: Number(payload.sub) } })
     if (!user) throw new ApiError(401, 'Account no longer exists')
+    if (user.status !== 'ACTIVE') {
+      throw new ApiError(403, 'This account is not active. Contact an administrator for help.')
+    }
     req.user = user
     next()
   } catch (e) {

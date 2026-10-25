@@ -2,7 +2,7 @@ export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   /*
    * The Button and Badge components build their class names at runtime
-   * (`btn-${variant}`, `badge-${tone}`), so the scanner never sees the full
+   * (`btn-${variant}`, `badge-${tone}`), so Tailwind's content detection misses
    * class name. Without this safelist Tailwind purges those component rules
    * from index.css and the buttons/badges render with no background at all.
    */

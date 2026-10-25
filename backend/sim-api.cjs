@@ -180,17 +180,15 @@ async function main() {
     eq('GET /items/999999 -> 404', (await req('GET', '/items/999999')).status, 404)
     eq('GET /items/abc -> 400', (await req('GET', '/items/abc')).status, 400)
 
-    const qr = await req('GET', `/items/${itemsByCode['EQ-5001']}/qrcode`)
-    eq('qrcode -> 200', qr.status, 200)
-    ok('qrcode is png', (qr.ct || '').includes('image/png') && qr.buf && qr.buf.slice(1, 4).toString() === 'PNG')
-    eq('qrcode 404 missing item', (await req('GET', '/items/999999/qrcode')).status, 404)
-
-    const byCode = await req('GET', '/items/code/EQ-5001', { token: admin })
-    eq('GET /items/code/:code as admin -> 200', byCode.status, 200)
-    ok('code lookup includes openLoans', !!(byCode.data && Array.isArray(byCode.data.openLoans)))
-    eq('GET /items/code as student -> 403', (await req('GET', '/items/code/EQ-5001', { token: stu })).status, 403)
-    eq('GET /items/code no token -> 401', (await req('GET', '/items/code/EQ-5001')).status, 401)
-    eq('GET /items/code/EQ-9999 -> 404', (await req('GET', '/items/code/EQ-9999', { token: admin })).status, 404)
+    const deskSearch = await req('GET', '/items/desk-search?q=EQ-5001', { token: admin })
+    eq('GET /items/desk-search as admin -> 200', deskSearch.status, 200)
+    ok(
+      'desk search matches item code and includes openLoans',
+      Array.isArray(deskSearch.data) &&
+        deskSearch.data.some((result) => result.item.code === 'EQ-5001' && Array.isArray(result.openLoans)),
+    )
+    eq('GET /items/desk-search as student -> 403', (await req('GET', '/items/desk-search?q=EQ-5001', { token: stu })).status, 403)
+    eq('GET /items/desk-search no token -> 401', (await req('GET', '/items/desk-search?q=EQ-5001')).status, 401)
   }
 
   // ================= ITEMS admin CRUD =================
@@ -478,12 +476,15 @@ async function main() {
     eq('GET /dashboard (student) -> 200', s.status, 200)
     eq('student dashboard role BORROWER', s.data && s.data.role, 'BORROWER')
     ok('student dashboard has activeLoans/overdueCount', !!(s.data && typeof s.data.activeLoans === 'number' && typeof s.data.overdueCount === 'number'))
-    ok('student dashboard has dueSoon + recent', !!(s.data && 'dueSoon' in s.data && 'recent' in s.data))
+    ok('student dashboard has dueSoonCount + dueSoon + recent', !!(s.data && typeof s.data.dueSoonCount === 'number' && Array.isArray(s.data.dueSoon) && Array.isArray(s.data.recent)))
+    ok('student dueSoon excludes overdue loans', !!(s.data && s.data.dueSoon.every((loan) => loan.status === 'BORROWED')))
     const a = await req('GET', '/dashboard', { token: admin })
     eq('GET /dashboard admin -> 200', a.status, 200)
     eq('admin dashboard role ADMIN', a.data && a.data.role, 'ADMIN')
     ok('admin dashboard totals present', !!(a.data && typeof a.data.totalItems === 'number' && typeof a.data.totalUsers === 'number'))
-    ok('admin dashboard pendingQueue + categoryBreakdown', !!(a.data && Array.isArray(a.data.pendingQueue) && Array.isArray(a.data.categoryBreakdown)))
+    ok('admin dashboard queues and borrowed categories present', !!(a.data && Array.isArray(a.data.pendingQueue) && Array.isArray(a.data.dueLoans) && Array.isArray(a.data.pendingReservations) && Array.isArray(a.data.categoryBreakdown)))
+    ok('admin dashboard has six months of borrowing history', !!(a.data && Array.isArray(a.data.borrowingHistory) && a.data.borrowingHistory.length === 6 && a.data.borrowingHistory.every((entry) => /^\d{4}-\d{2}$/.test(entry.month) && typeof entry.units === 'number')))
+    ok('admin dashboard low-stock count and list present', !!(a.data && typeof a.data.lowStockCount === 'number' && Array.isArray(a.data.lowStock)))
     eq('GET /dashboard no token -> 401', (await req('GET', '/dashboard')).status, 401)
   }
 
