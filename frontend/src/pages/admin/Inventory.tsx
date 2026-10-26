@@ -305,15 +305,17 @@ export default function AdminInventory() {
           <Field label="Name">
             <Input value={form.name} onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))} placeholder="e.g. HD Projector" />
           </Field>
-          <Field label="Category">
-            <Select value={form.categoryId} onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}>
-              {categories.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.name}
-                </option>
-              ))}
-            </Select>
-          </Field>
+          <div className="select-accent-field">
+            <Field label="Category">
+              <Select value={form.categoryId} onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))} className="select-accent">
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </Select>
+            </Field>
+          </div>
           <Field label="Department (optional)">
             <Input value={form.department} onChange={(e) => setForm((f) => ({ ...f, department: e.target.value }))} placeholder="e.g. Media Studies" />
           </Field>
@@ -335,20 +337,24 @@ export default function AdminInventory() {
               }
             />
           </Field>
-          <Field label="Condition">
-            <Select value={form.condition} onChange={(e) => setForm((f) => ({ ...f, condition: e.target.value }))}>
-              <option value="NEW">New</option>
-              <option value="GOOD">Good</option>
-              <option value="DAMAGED">Damaged</option>
-            </Select>
-          </Field>
-          <Field label="Status">
-            <Select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}>
-              <option value="AVAILABLE">Available</option>
-              <option value="MAINTENANCE">Under maintenance</option>
-              <option value="RETIRED">Retired</option>
-            </Select>
-          </Field>
+          <div className="select-accent-field">
+            <Field label="Condition">
+              <Select value={form.condition} onChange={(e) => setForm((f) => ({ ...f, condition: e.target.value }))} className="select-accent">
+                <option value="NEW">New</option>
+                <option value="GOOD">Good</option>
+                <option value="DAMAGED">Damaged</option>
+              </Select>
+            </Field>
+          </div>
+          <div className="select-accent-field">
+            <Field label="Status">
+              <Select value={form.status} onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))} className="select-accent">
+                <option value="AVAILABLE">Available</option>
+                <option value="MAINTENANCE">Under maintenance</option>
+                <option value="RETIRED">Retired</option>
+              </Select>
+            </Field>
+          </div>
           <div className="sm:col-span-2">
             <Field label="Description (optional)">
               <Textarea value={form.description} onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} />
@@ -358,7 +364,7 @@ export default function AdminInventory() {
             <div className="sm:col-span-2">
               <Field label="Photo">
                 <div className="flex flex-wrap items-center gap-3">
-                  <input ref={fileRef} type="file" accept="image/*" className="input cursor-pointer py-1.5 file:mr-3 file:border-0 file:bg-primary-800 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-primary-700" />
+                  <input ref={fileRef} type="file" accept="image/*" className="input cursor-pointer py-1.5 file:mr-3 file:rounded-md file:border-0 file:bg-primary-800 file:px-3 file:py-1.5 file:text-xs file:font-semibold file:text-white hover:file:bg-primary-700" />
                   <Button variant="secondary" size="sm" onClick={uploadImage} disabled={saving}>
                     Upload
                   </Button>

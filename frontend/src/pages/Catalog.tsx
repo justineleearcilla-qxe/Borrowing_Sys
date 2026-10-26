@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { api, apiErrorMessage } from "../api/client";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
@@ -19,7 +19,6 @@ import { CategoryIcon } from "../components/CategoryIcon";
 import { Icon } from "../components/Icon";
 
 export default function Catalog() {
-  const navigate = useNavigate();
   const { user } = useAuth();
   const { add: addToCart, has: inCart } = useCart();
   const [categories, setCategories] = useState<Category[]>([]);
@@ -128,7 +127,7 @@ export default function Catalog() {
         </div>
       </section>
 
-      <div className="mb-8 grid grid-cols-2 gap-px border border-slate-200 bg-slate-200 sm:grid-cols-4">
+      <div className="catalog-stats mb-8 grid grid-cols-2 gap-px border border-slate-200 bg-slate-200 sm:grid-cols-4">
         <div className="bg-white px-4 py-4">
           <p className="text-2xl font-bold text-primary-800">{items.length}</p>
           <p className="mt-1 text-[11px] font-bold uppercase tracking-wider text-slate-500">
@@ -209,22 +208,18 @@ export default function Catalog() {
 
         <div>
           <Card className="mb-4 p-4">
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <div className="relative">
-                <Icon
-                  name="search"
-                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-                />
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
+              <div>
                 <Input
                   value={q}
                   onChange={(e) => setQ(e.target.value)}
                   placeholder="Search name or code..."
-                  className="pl-9"
                 />
               </div>
               <Select
                 value={department}
                 onChange={(e) => setDepartment(e.target.value)}
+                className="catalog-department-select"
               >
                 <option value="">All departments</option>
                 {departments.map((d) => (
@@ -242,9 +237,6 @@ export default function Catalog() {
                 />
                 Available now only
               </label>
-              <p className="self-center text-right text-xs text-slate-400 sm:text-left">
-                {filtered.length} item(s) found
-              </p>
             </div>
           </Card>
 
@@ -261,7 +253,7 @@ export default function Catalog() {
                 return (
                   <Card
                     key={item.id}
-                    className="catalog-item group flex flex-col"
+                    className="catalog-item group relative flex flex-col"
                     style={{ animationDelay: `${index * 45}ms` }}
                   >
                     <div
@@ -280,24 +272,28 @@ export default function Catalog() {
                         />
                       )}
                     </div>
-                    <div className="flex flex-1 flex-col gap-2 p-4">
+                    <Link
+                      to={`/items/${item.id}`}
+                      className="absolute inset-0 z-10 rounded-xl focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary-700"
+                      aria-label={`View ${item.name} details`}
+                    >
+                      <span className="sr-only">View item details</span>
+                    </Link>
+                    <div className="pointer-events-none relative z-20 flex flex-1 flex-col gap-2 p-4">
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0">
                           <p className="truncate text-sm font-bold text-slate-800">
                             {item.name}
                           </p>
-                          <p className="font-mono text-[11px] text-slate-400">
-                            {item.code}
+                          <p className="text-xs text-slate-500">
+                            {item.category.name}
+                            {item.department ? ` - ${item.department}` : ""}
                           </p>
                         </div>
                         <Badge tone={conditionTone[item.condition] as never}>
                           {item.condition}
                         </Badge>
                       </div>
-                      <p className="text-xs text-slate-500">
-                        {item.category.name}
-                        {item.department ? ` - ${item.department}` : ""}
-                      </p>
                       <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-2">
                         <div className="flex flex-wrap items-center gap-1">
                           <Badge tone={out ? "red" : "green"}>
@@ -311,7 +307,7 @@ export default function Catalog() {
                             </Badge>
                           )}
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="pointer-events-auto relative z-20 flex items-center gap-2">
                           {user &&
                             item.status === "AVAILABLE" &&
                             item.availableQuantity > 0 &&
@@ -328,13 +324,6 @@ export default function Catalog() {
                                 Add
                               </Button>
                             ))}
-                          <Button
-                            variant="secondary"
-                            size="sm"
-                            onClick={() => navigate(`/items/${item.id}`)}
-                          >
-                            View
-                          </Button>
                         </div>
                       </div>
                     </div>

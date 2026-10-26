@@ -94,7 +94,7 @@ export default function AdminReports() {
         description="Borrowing trends, department activity and damage/loss tracking."
         actions={
           <>
-            <Button variant="secondary" onClick={() => exportReport('excel')} disabled={Boolean(exporting)}>
+            <Button variant="success" onClick={() => exportReport('excel')} disabled={Boolean(exporting)}>
               {exporting === 'excel' ? 'Exporting...' : 'Export Excel'}
             </Button>
             <Button onClick={() => exportReport('pdf')} disabled={Boolean(exporting)}>

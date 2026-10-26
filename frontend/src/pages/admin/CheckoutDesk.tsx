@@ -87,6 +87,8 @@ function LoanActions({
 }
 
 export default function AdminCheckoutDesk() {
+  const searchPlaceholder =
+    "Search item name, item code, or borrower name...";
   const [todayLoans, setTodayLoans] = useState<Loan[]>([]);
   const [todayReservations, setTodayReservations] = useState<Reservation[]>([]);
   const [todayLoading, setTodayLoading] = useState(true);
@@ -320,16 +322,81 @@ export default function AdminCheckoutDesk() {
       )}
 
       <Card>
-        <CardHeader title="Find an item or borrower" />
-        <div className="card-body space-y-4">
-          <div className="max-w-2xl">
-            <Input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search item name, item code, or borrower name..."
-              aria-label="Search by item name, item code, or borrower name"
+        <CardHeader title="Today" />
+        {todayError && (
+          <div className="p-4">
+            <Alert tone="error">{todayError}</Alert>
+          </div>
+        )}
+        {todayLoading ? (
+          <div className="flex justify-center py-10 text-primary-800">
+            <Spinner className="h-7 w-7" />
+          </div>
+        ) : todayLoans.length === 0 && todayReservations.length === 0 ? (
+          <div className="p-4">
+            <EmptyState
+              title="Nothing needs attention today"
+              hint="Approved pickups, due-today loans, and overdue loans will appear here."
             />
           </div>
+        ) : (
+          <div className="divide-y divide-slate-200">
+            {todayReservations.map((reservation) => (
+              <div
+                key={`reservation-${reservation.id}`}
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-800">
+                    {reservation.item.name}{" "}
+                    <span className="font-normal">·</span>{" "}
+                    {reservation.user?.name}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {reservation.item.code} · Qty {reservation.quantity} ·
+                    Pickup {formatDate(reservation.reservationDate)}
+                    {reservation.pickupTime
+                      ? ` at ${reservation.pickupTime}`
+                      : ""}
+                  </p>
+                  <Badge tone="blue" className="mt-1">
+                    Approved reservation
+                  </Badge>
+                </div>
+                <Button
+                  size="sm"
+                  disabled={busyKey === `reservation-${reservation.id}`}
+                  onClick={() => void pickupReservation(reservation)}
+                >
+                  {busyKey === `reservation-${reservation.id}`
+                    ? "Processing..."
+                    : "Mark picked up"}
+                </Button>
+              </div>
+            ))}
+            {todayLoans.map(renderLoan)}
+          </div>
+        )}
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader
+          title="Find an item or borrower"
+          actions={
+            <div className="w-full sm:w-auto">
+              <Input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder={searchPlaceholder}
+                aria-label="Search by item name, item code, or borrower name"
+                style={{
+                  width: `min(100%, ${searchPlaceholder.length}ch)`,
+                }}
+              />
+            </div>
+          }
+        />
+        <div className="card-body space-y-4">
           {searchError && <Alert tone="error">{searchError}</Alert>}
           {searchLoading && (
             <div className="flex justify-center py-6 text-primary-800">
@@ -407,64 +474,6 @@ export default function AdminCheckoutDesk() {
             </div>
           )}
         </div>
-      </Card>
-
-      <Card className="mt-6">
-        <CardHeader title="Today" />
-        {todayError && (
-          <div className="p-4">
-            <Alert tone="error">{todayError}</Alert>
-          </div>
-        )}
-        {todayLoading ? (
-          <div className="flex justify-center py-10 text-primary-800">
-            <Spinner className="h-7 w-7" />
-          </div>
-        ) : todayLoans.length === 0 && todayReservations.length === 0 ? (
-          <div className="p-4">
-            <EmptyState
-              title="Nothing needs attention today"
-              hint="Approved pickups, due-today loans, and overdue loans will appear here."
-            />
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-200">
-            {todayReservations.map((reservation) => (
-              <div
-                key={`reservation-${reservation.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5"
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-800">
-                    {reservation.item.name}{" "}
-                    <span className="font-normal">·</span>{" "}
-                    {reservation.user?.name}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {reservation.item.code} · Qty {reservation.quantity} ·
-                    Pickup {formatDate(reservation.reservationDate)}
-                    {reservation.pickupTime
-                      ? ` at ${reservation.pickupTime}`
-                      : ""}
-                  </p>
-                  <Badge tone="blue" className="mt-1">
-                    Approved reservation
-                  </Badge>
-                </div>
-                <Button
-                  size="sm"
-                  disabled={busyKey === `reservation-${reservation.id}`}
-                  onClick={() => void pickupReservation(reservation)}
-                >
-                  {busyKey === `reservation-${reservation.id}`
-                    ? "Processing..."
-                    : "Mark picked up"}
-                </Button>
-              </div>
-            ))}
-            {todayLoans.map(renderLoan)}
-          </div>
-        )}
       </Card>
 
       <Modal
