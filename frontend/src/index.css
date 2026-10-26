@@ -135,9 +135,37 @@
   }
   .select {
     @apply input pr-8;
+    accent-color: #1d4ed8;
+    color-scheme: light;
+    background-color: #fff;
+    color: #111827;
+  }
+  .select:focus {
+    background-color: #fff;
+    color: #111827;
+  }
+  .select option {
+    background-color: #fff;
+    color: #1e293b;
+  }
+  .select option:checked {
+    background-color: #1e40af;
+    color: #fff;
+  }
+  .select option:hover {
+    background-color: #dbeafe;
+    color: #172554;
+  }
+  .select option:disabled {
+    color: #94a3b8;
   }
   .textarea {
     @apply input min-h-[80px] resize-y;
+    background-color: #fff;
+    color: #111827;
+  }
+  .textarea::placeholder {
+    color: #64748b;
   }
 
   .badge {

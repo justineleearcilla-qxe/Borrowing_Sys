@@ -17,10 +17,6 @@ const mainNav = [
   { to: "/credits", label: "Borrowing Credits", icon: "chart" },
 ];
 
-const staffNav = [
-  { to: "/admin/reservations", label: "Reservations", icon: "calendar" },
-];
-
 const adminNav = [
   { to: "/admin/scan", label: "Check-out / Return", icon: "clipboard" },
   { to: "/admin/requests", label: "Requests", icon: "inbox" },
@@ -55,24 +51,6 @@ function NavItems({ onNavigate }: { onNavigate?: () => void }) {
             </NavLink>
           ))}
       </div>
-      {user?.role === "FACULTY" && (
-        <div>
-          <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">
-            Equipment Desk
-          </p>
-          {staffNav.map((n) => (
-            <NavLink
-              key={n.to}
-              to={n.to}
-              className={linkClass}
-              onClick={onNavigate}
-            >
-              <Icon name={n.icon} />
-              {n.label}
-            </NavLink>
-          ))}
-        </div>
-      )}
       {user?.role === "ADMIN" && (
         <div>
           <p className="px-4 pb-2 text-[10px] font-bold uppercase tracking-widest text-slate-500">

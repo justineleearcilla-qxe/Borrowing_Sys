@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { Prisma, ReservationStatus } from "@prisma/client";
 import { prisma } from "../lib/prisma";
-import { requireAuth, requireStaff } from "../middleware/auth";
+import { requireAdmin, requireAuth } from "../middleware/auth";
 import { ApiError, asyncHandler } from "../utils/http";
 import { sanitizeUser } from "../utils/serialize";
 import { sendMail } from "../services/mailer";
@@ -110,12 +110,12 @@ router.get(
 );
 
 // ---------------------------------------------------------------------------
-// LIST - admin / faculty, with search + status filter
+// LIST - admin, with search + status filter
 // ---------------------------------------------------------------------------
 router.get(
   "/",
   requireAuth,
-  requireStaff,
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const { q, status, userId } = req.query as Record<string, string | undefined>;
 
@@ -191,12 +191,12 @@ router.patch(
 );
 
 // ---------------------------------------------------------------------------
-// DECIDE - admin / faculty approve or reject (conflict is re-checked on approve)
+// DECIDE - admin approve or reject (conflict is re-checked on approve)
 // ---------------------------------------------------------------------------
 router.patch(
   "/:id/decide",
   requireAuth,
-  requireStaff,
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const id = parseId(req.params.id);
     const body = (req.body ?? {}) as Record<string, unknown>;
@@ -272,7 +272,7 @@ router.patch(
 router.patch(
   "/:id/pickup",
   requireAuth,
-  requireStaff,
+  requireAdmin,
   asyncHandler(async (req, res) => {
     const id = parseId(req.params.id);
     const reservation = await prisma.reservation.findUnique({
