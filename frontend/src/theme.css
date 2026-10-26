@@ -216,8 +216,52 @@
   color: #e2e8f0;
 }
 
-[data-theme="dark"] .reject-remarks {
+[data-theme="dark"] .select {
+  border-color: rgba(148, 163, 184, 0.45);
+  color-scheme: light;
+  background-color: #fff;
+  color: #111827;
+}
+
+[data-theme="dark"] .select:focus {
+  border-color: #2563eb;
+  background-color: #fff;
+  color: #111827;
+}
+
+[data-theme="dark"] .select option {
+  background-color: #fff;
+  color: #1e293b;
+}
+
+[data-theme="dark"] .select option:checked {
+  background-color: #1e40af;
   color: #fff;
+}
+
+[data-theme="dark"] .select option:hover {
+  background-color: #dbeafe;
+  color: #172554;
+}
+
+[data-theme="dark"] .select option:disabled {
+  color: #94a3b8;
+}
+
+[data-theme="dark"] .textarea {
+  border-color: rgba(148, 163, 184, 0.45);
+  background-color: #fff;
+  color: #111827;
+}
+
+[data-theme="dark"] .textarea::placeholder {
+  color: #64748b;
+}
+
+[data-theme="dark"] .textarea:focus {
+  border-color: #2563eb;
+  background-color: #fff;
+  color: #111827;
 }
 
 [data-theme="dark"] .input::placeholder {

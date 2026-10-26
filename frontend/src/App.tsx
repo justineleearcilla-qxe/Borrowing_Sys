@@ -40,15 +40,6 @@ function RequireAdmin() {
   return <Outlet />;
 }
 
-/** Equipment desk: admins AND faculty run the reservation queue. */
-function RequireStaff() {
-  const { user } = useAuth();
-  if (!user) return null;
-  if (user.role !== "ADMIN" && user.role !== "FACULTY")
-    return <Navigate to="/" replace />;
-  return <Outlet />;
-}
-
 function PublicOnly() {
   const { user, loading } = useAuth();
   if (loading) return <FullPageSpinner />;
@@ -79,18 +70,16 @@ export default function App() {
                 <Route path="my-reservations" element={<MyReservations />} />
                 <Route path="cart" element={<Cart />} />
                 <Route path="credits" element={<Credits />} />
-                <Route element={<RequireStaff />}>
-                  <Route
-                    path="admin/reservations"
-                    element={<AdminReservations />}
-                  />
-                </Route>
                 <Route element={<RequireAdmin />}>
                   <Route path="admin/requests" element={<AdminRequests />} />
                   <Route path="admin/users" element={<AdminUsers />} />
                   <Route path="admin/inventory" element={<AdminInventory />} />
                   <Route path="admin/scan" element={<AdminCheckoutDesk />} />
                   <Route path="admin/reports" element={<AdminReports />} />
+                  <Route
+                    path="admin/reservations"
+                    element={<AdminReservations />}
+                  />
                 </Route>
               </Route>
             </Route>

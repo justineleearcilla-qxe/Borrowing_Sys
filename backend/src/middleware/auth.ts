@@ -30,21 +30,3 @@ export function requireAdmin(req: Request, _res: Response, next: NextFunction) {
   if (req.user?.role !== 'ADMIN') return next(new ApiError(403, 'Admin access required'))
   next()
 }
-
-/**
- * Roles allowed to manage reservations (approve / reject / convert to loan).
- *
- * SECURITY NOTE: this is deliberately wider than requireAdmin because the
- * spec asks for "Admin/teacher can approve". Drop 'FACULTY' here if your
- * school wants reservations to be an admin-only action - nothing else in the
- * codebase needs to change.
- */
-const STAFF_ROLES: ReadonlySet<string> = new Set(['ADMIN', 'FACULTY'])
-
-export function requireStaff(req: Request, _res: Response, next: NextFunction) {
-  const role = req.user?.role
-  if (!role || !STAFF_ROLES.has(role)) {
-    return next(new ApiError(403, 'Equipment desk access required'))
-  }
-  next()
-}
