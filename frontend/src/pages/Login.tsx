@@ -2,12 +2,14 @@ import { FormEvent, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Alert, Button, Field, Input } from "../components/ui";
+import { Icon } from "../components/Icon";
 
 export default function Login() {
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
 
@@ -60,13 +62,25 @@ export default function Login() {
             />
           </Field>
           <Field label="Password">
-            <Input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Your password"
-              required
-            />
+            <div className="relative">
+              <Input
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Your password"
+                required
+                className="pr-10"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+                aria-pressed={showPassword}
+                className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 hover:text-slate-800"
+              >
+                <Icon name={showPassword ? "eye-off" : "eye"} className="h-5 w-5" />
+              </button>
+            </div>
           </Field>
           <Button type="submit" className="w-full" disabled={busy}>
             {busy ? "Signing in..." : "Sign in"}
@@ -81,14 +95,6 @@ export default function Login() {
             </Link>
           </p>
         </form>
-        <div className="mt-4 border border-primary-700 bg-primary-800 p-4 text-xs text-slate-300">
-          <p className="mb-1 font-bold uppercase tracking-wide text-slate-200">
-            Demo accounts
-          </p>
-          <p>Admin: admin@school.edu / Password123!</p>
-          <p>Student: maria.student@school.edu / Password123!</p>
-          <p>Faculty: david.faculty@school.edu / Password123!</p>
-        </div>
       </div>
     </div>
   );

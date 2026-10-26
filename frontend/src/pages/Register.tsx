@@ -2,6 +2,7 @@ import { FormEvent, useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { Alert, Button, Field, Input, Select } from "../components/ui";
+import { Icon } from "../components/Icon";
 
 export default function Register() {
   const { register } = useAuth();
@@ -16,6 +17,8 @@ export default function Register() {
   const [error, setError] = useState("");
   const [registered, setRegistered] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   function set<K extends keyof typeof form>(key: K, value: string) {
     setForm((f) => ({ ...f, [key]: value }));
@@ -99,23 +102,47 @@ export default function Register() {
           </Field>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <Field label="Password">
-              <Input
-                type="password"
-                value={form.password}
-                onChange={(e) => set("password", e.target.value)}
-                placeholder="Min. 8 characters"
-                required
-                minLength={8}
-              />
+              <div className="relative">
+                <Input
+                  type={showPassword ? "text" : "password"}
+                  value={form.password}
+                  onChange={(e) => set("password", e.target.value)}
+                  placeholder="Min. 8 characters"
+                  required
+                  minLength={8}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((visible) => !visible)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showPassword}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 hover:text-slate-800"
+                >
+                  <Icon name={showPassword ? "eye-off" : "eye"} className="h-5 w-5" />
+                </button>
+              </div>
             </Field>
             <Field label="Confirm password">
-              <Input
-                type="password"
-                value={form.confirm}
-                onChange={(e) => set("confirm", e.target.value)}
-                required
-                minLength={8}
-              />
+              <div className="relative">
+                <Input
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={form.confirm}
+                  onChange={(e) => set("confirm", e.target.value)}
+                  required
+                  minLength={8}
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword((visible) => !visible)}
+                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  aria-pressed={showConfirmPassword}
+                  className="absolute inset-y-0 right-0 flex items-center px-3 text-slate-500 hover:text-slate-800"
+                >
+                  <Icon name={showConfirmPassword ? "eye-off" : "eye"} className="h-5 w-5" />
+                </button>
+              </div>
             </Field>
           </div>
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">

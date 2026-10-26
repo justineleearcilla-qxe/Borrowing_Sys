@@ -685,9 +685,6 @@ async function main() {
   }
 
   console.log("Seed complete.");
-  console.log("Admin:   admin@school.edu / Password123!");
-  console.log("Student: maria.student@school.edu / Password123!");
-  console.log("Faculty: david.faculty@school.edu / Password123!");
 }
 
 main()

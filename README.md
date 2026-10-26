@@ -93,15 +93,7 @@ npm install
 npm run dev                # web app on http://localhost:5173 (proxies /api to :4000)
 ```
 
-## Demo Accounts (created by the seed)
-
-| Role    | Email                    | Password     |
-| ------- | ------------------------ | ------------ |
-| Admin   | admin@school.edu         | Password123! |
-| Student | maria.student@school.edu | Password123! |
-| Faculty | david.faculty@school.edu | Password123! |
-
-The seed also creates sample loans covering every status (pending, approved, borrowed/due-soon, overdue, returned, rejected).
+The seed creates sample accounts and loans for local development. Set secure credentials before using seeded accounts outside a local development environment.
 
 ## Environment Variables (backend/.env)
 
