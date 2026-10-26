@@ -46,7 +46,7 @@ export default function Register() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-primary-900 p-4">
+    <div className="flex min-h-screen items-center justify-center bg-transparent p-4">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
           <img

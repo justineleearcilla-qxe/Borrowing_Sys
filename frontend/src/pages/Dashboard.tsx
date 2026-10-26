@@ -140,6 +140,32 @@ function LinkedStatCard({
   );
 }
 
+function normalizeAdminDashboard(data: Partial<AdminDashboard>): AdminDashboard {
+  const lowStock = Array.isArray(data.lowStock) ? data.lowStock : [];
+  return {
+    role: "ADMIN",
+    totalItems: data.totalItems ?? 0,
+    totalUsers: data.totalUsers ?? 0,
+    totalCategories: data.totalCategories ?? 0,
+    pendingRequests: data.pendingRequests ?? 0,
+    borrowedCount: data.borrowedCount ?? 0,
+    overdueCount: data.overdueCount ?? 0,
+    pendingQueue: Array.isArray(data.pendingQueue) ? data.pendingQueue : [],
+    dueLoans: Array.isArray(data.dueLoans) ? data.dueLoans : [],
+    pendingReservations: Array.isArray(data.pendingReservations)
+      ? data.pendingReservations
+      : [],
+    categoryBreakdown: Array.isArray(data.categoryBreakdown)
+      ? data.categoryBreakdown
+      : [],
+    borrowingHistory: Array.isArray(data.borrowingHistory)
+      ? data.borrowingHistory
+      : [],
+    lowStockCount: data.lowStockCount ?? lowStock.length,
+    lowStock,
+  };
+}
+
 function BorrowingHistoryChart({
   history,
 }: {
@@ -538,7 +564,8 @@ export default function Dashboard() {
       .get<StudentDashboard | AdminDashboard>("/dashboard")
       .then((res) => {
         if (cancelled) return;
-        if (res.data.role === "ADMIN") setAdminData(res.data as AdminDashboard);
+        if (res.data.role === "ADMIN")
+          setAdminData(normalizeAdminDashboard(res.data));
         else setStudentData(res.data as StudentDashboard);
       })
       .catch((e) => !cancelled && setError(apiErrorMessage(e)));
