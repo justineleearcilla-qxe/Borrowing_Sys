@@ -49,6 +49,16 @@ export default function Register() {
     <div className="flex min-h-screen items-center justify-center bg-primary-900 p-4">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
+          <img
+            src="/cspc-logo.png"
+            alt="Camarines Sur Polytechnic Colleges seal"
+            className="mx-auto mb-3 h-16 w-16 object-contain"
+            width="64"
+            height="64"
+          />
+          <p className="text-sm font-semibold text-white">
+            Camarines Sur Polytechnic Colleges
+          </p>
           <h1 className="text-2xl font-bold text-white">Create your account</h1>
           <p className="text-sm text-slate-300">
             Registration requires a valid school email address

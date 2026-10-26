@@ -322,13 +322,22 @@ export default function Layout() {
     <div className="min-h-screen">
       <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-white/15 bg-primary-900/90 shadow-2xl backdrop-blur-2xl lg:flex">
         <div className="flex items-start justify-between gap-3 border-b border-white/10 px-4 py-5">
-          <div>
-            <p className="text-lg font-bold tracking-tight text-white">
-              EquipHub
-            </p>
-            <p className="text-[11px] uppercase tracking-widest text-slate-400">
-              Campus equipment, simplified
-            </p>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <img
+              src="/cspc-logo.png"
+              alt="Camarines Sur Polytechnic Colleges seal"
+              className="h-10 w-10 shrink-0 object-contain"
+              width="40"
+              height="40"
+            />
+            <div className="min-w-0">
+              <p className="text-sm font-bold leading-tight tracking-tight text-white">
+                CSPC
+              </p>
+              <p className="mt-1 text-[9px] leading-tight text-slate-300">
+                Equipment Borrowing System
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-1">
             <CartButton variant="sidebar" />
@@ -352,7 +361,16 @@ export default function Layout() {
           />
           <aside className="absolute inset-y-0 left-0 flex w-64 flex-col bg-primary-900/95 shadow-xl backdrop-blur-2xl">
             <div className="flex items-center justify-between border-b border-white/10 px-4 py-4">
-              <span className="text-lg font-bold text-white">EquipHub</span>
+              <span className="flex items-center gap-2 text-sm font-bold text-white">
+                <img
+                  src="/cspc-logo.png"
+                  alt=""
+                  className="h-8 w-8 object-contain"
+                  width="32"
+                  height="32"
+                />
+                CSPC Equipment Borrowing
+              </span>
               <div className="flex items-center gap-2">
                 <ThemeToggle variant="sidebar" />
                 <button
@@ -380,7 +398,16 @@ export default function Layout() {
           Menu
         </button>
         <div className="flex items-center gap-3">
-          <span className="font-bold text-primary-800">EquipHub</span>
+          <span className="flex items-center gap-1.5 text-xs font-bold text-primary-800">
+            <img
+              src="/cspc-logo.png"
+              alt=""
+              className="h-7 w-7 object-contain"
+              width="28"
+              height="28"
+            />
+            CSPC
+          </span>
           <CartButton variant="header" />
           <NotificationBell
             items={notifications}
