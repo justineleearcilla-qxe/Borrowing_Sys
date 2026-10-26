@@ -8,6 +8,7 @@ import {
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import Layout from "./components/Layout";
+import CspcBackground from "./components/CspcBackground";
 import { FullPageSpinner } from "./components/ui";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -60,6 +61,7 @@ export default function App() {
     <BrowserRouter>
       <AuthProvider>
         <CartProvider>
+          <CspcBackground />
           <Routes>
             <Route element={<PublicOnly />}>
               <Route path="/login" element={<Login />} />
