@@ -304,7 +304,7 @@ export default function Layout() {
             <img
               src="/cspc-logo.png"
               alt="Camarines Sur Polytechnic Colleges seal"
-              className="h-10 w-10 shrink-0 object-contain"
+              className="brand-seal h-10 w-10 shrink-0 object-contain"
               width="40"
               height="40"
             />
@@ -318,7 +318,7 @@ export default function Layout() {
             </div>
           </div>
           <div className="flex items-center gap-1">
-            <CartButton variant="sidebar" />
+            {user?.role !== "ADMIN" && <CartButton variant="sidebar" />}
             <NotificationBell
               items={notifications}
               onRefresh={refreshNotifications}
@@ -343,7 +343,7 @@ export default function Layout() {
                 <img
                   src="/cspc-logo.png"
                   alt=""
-                  className="h-8 w-8 object-contain"
+                  className="brand-seal h-8 w-8 object-contain"
                   width="32"
                   height="32"
                 />
@@ -380,13 +380,13 @@ export default function Layout() {
             <img
               src="/cspc-logo.png"
               alt=""
-              className="h-7 w-7 object-contain"
+              className="brand-seal h-7 w-7 object-contain"
               width="28"
               height="28"
             />
             CSPC
           </span>
-          <CartButton variant="header" />
+          {user?.role !== "ADMIN" && <CartButton variant="header" />}
           <NotificationBell
             items={notifications}
             onRefresh={refreshNotifications}

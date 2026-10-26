@@ -52,6 +52,11 @@ export default function AdminReservations() {
     load(status, search)
   }, [status, search])
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearch(query.trim()), 250)
+    return () => window.clearTimeout(timer)
+  }, [query])
+
   async function act(id: number, fn: () => Promise<unknown>) {
     setBusyId(id)
     setError('')
@@ -95,40 +100,37 @@ export default function AdminReservations() {
         </div>
       )}
 
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="grid w-full grid-cols-2 gap-2 sm:grid-cols-3 md:flex md:w-auto md:shrink-0 md:flex-wrap md:gap-0 md:border-b md:border-slate-200">
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div
+          role="group"
+          aria-label="Filter reservations by status"
+          className="flex max-w-full gap-1 overflow-x-auto border border-slate-200 bg-slate-100 p-1"
+        >
           {[{ key: 'ALL', label: 'All' }, ...TABS].map((t) => (
             <button
               key={t.key}
+              type="button"
+              aria-pressed={status === t.key}
               onClick={() => setStatus(t.key)}
-              className={`min-w-0 whitespace-nowrap border px-3 py-2 text-sm font-semibold transition-colors sm:px-4 md:-mb-px md:shrink-0 ${
+              className={`shrink-0 whitespace-nowrap border px-3 py-2 text-sm font-semibold transition-colors ${
                 status === t.key
-                  ? 'border-primary-800 bg-white text-primary-800 md:border-b-white'
-                  : 'border-transparent bg-slate-50 text-slate-500 hover:text-slate-700'
+                  ? 'border-primary-800 bg-primary-800 text-white shadow-sm'
+                  : 'border-transparent bg-transparent text-slate-600 hover:bg-white hover:text-primary-800'
               }`}
             >
               {t.label}
             </button>
           ))}
         </div>
-        <form
-          className="flex w-full min-w-0 items-center gap-2 sm:w-auto"
-          onSubmit={(e) => {
-            e.preventDefault()
-            setSearch(query.trim())
-          }}
-        >
+        <div className="w-full md:max-w-xs">
           <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search name, item or purpose..."
             aria-label="Search reservations"
-            className="min-w-0 flex-1 sm:w-64 sm:flex-none"
+            maxLength={100}
           />
-          <Button type="submit" variant="secondary" size="sm">
-            Search
-          </Button>
-        </form>
+        </div>
       </div>
 
       <Card>
@@ -138,7 +140,7 @@ export default function AdminReservations() {
             <Spinner className="h-7 w-7" />
           </div>
         ) : rows.length === 0 ? (
-          <div className="p-5">
+          <div className="p-4">
             <EmptyState
               title="No reservations in this view"
               hint={search ? `Nothing matches "${search}".` : undefined}

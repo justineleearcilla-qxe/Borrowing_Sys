@@ -1,4 +1,4 @@
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api, apiErrorMessage } from "../../api/client";
 import { useAuth } from "../../context/AuthContext";
 import type { User, UserStatus } from "../../types";
@@ -63,6 +63,11 @@ export default function AdminUsers() {
     void load();
   }, [load]);
 
+  useEffect(() => {
+    const timer = window.setTimeout(() => setSearch(query.trim()), 250);
+    return () => window.clearTimeout(timer);
+  }, [query]);
+
   async function changeStatus(target: User, action: "approve" | "deactivate" | "reactivate") {
     setBusyId(target.id);
     setError("");
@@ -90,11 +95,6 @@ export default function AdminUsers() {
     }
   }
 
-  function submitSearch(event: FormEvent) {
-    event.preventDefault();
-    setSearch(query.trim());
-  }
-
   return (
     <>
       <PageHeader
@@ -107,18 +107,14 @@ export default function AdminUsers() {
         </div>
       )}
       <div className="mb-4 flex flex-wrap items-center gap-3">
-        <form onSubmit={submitSearch} className="flex flex-1 gap-2">
-          <Input
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            placeholder="Search name or email..."
-            aria-label="Search users by name or email"
-            className="max-w-md"
-          />
-          <Button type="submit" variant="secondary" size="sm">
-            Search
-          </Button>
-        </form>
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search name or email..."
+          aria-label="Search users by name or email"
+          maxLength={100}
+          className="w-full max-w-md flex-1"
+        />
         <Select
           value={status}
           onChange={(event) => setStatus(event.target.value as UserStatus | "ALL")}

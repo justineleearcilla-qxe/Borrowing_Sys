@@ -188,9 +188,8 @@ export default function AdminInventory() {
       )}
 
       <Card className="mb-4 p-4">
-        <div className="relative max-w-md">
-          <Icon name="search" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, code or department..." className="pl-9" />
+        <div className="max-w-md">
+          <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search by name, code or department..." />
         </div>
       </Card>
 

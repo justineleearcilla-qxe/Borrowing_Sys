@@ -147,6 +147,17 @@
 }
 
 @layer components {
+  .brand-seal {
+    box-sizing: border-box;
+    padding: 3px;
+    border-radius: 50%;
+    background-color: #fff;
+    box-shadow:
+      0 0 0 1px rgba(148, 163, 184, 0.35),
+      0 2px 8px rgba(15, 23, 42, 0.18);
+    object-fit: contain;
+  }
+
   .btn {
     @apply inline-flex items-center justify-center gap-2 border px-4 py-2 text-sm font-semibold transition-colors duration-150 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-1 disabled:cursor-not-allowed disabled:opacity-50;
   }
@@ -251,7 +262,7 @@
     color: #1e293b;
   }
   .select option:checked {
-    background-color: #1e40af;
+    background-color: #1d4ed8;
     color: #fff;
   }
   .select option:hover {
@@ -294,6 +305,7 @@
 
   .th {
     @apply whitespace-nowrap px-3 py-2.5 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500;
+    border-radius: 0;
   }
   .td {
     @apply px-3 py-3 align-top text-sm text-slate-700;
