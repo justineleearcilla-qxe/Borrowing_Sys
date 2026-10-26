@@ -229,6 +229,26 @@
   color: #111827;
 }
 
+[data-theme="dark"] .select.catalog-department-select,
+[data-theme="dark"] .select.catalog-department-select:focus {
+  border-color: #1d4ed8;
+  background-color: #1d4ed8;
+  color: #fff;
+}
+
+[data-theme="dark"] .select-accent {
+  border-color: #475569;
+  background-color: #070e1f;
+  color: #fff;
+}
+
+[data-theme="dark"] .select-accent:focus {
+  border-color: #5f6b80;
+  box-shadow: 0 0 0 1px #5f6b80;
+  background-color: #070e1f;
+  color: #fff;
+}
+
 [data-theme="dark"] .select option {
   background-color: #fff;
   color: #1e293b;
@@ -242,6 +262,12 @@
 [data-theme="dark"] .select option:hover {
   background-color: #dbeafe;
   color: #172554;
+}
+
+[data-theme="dark"] .select-accent option:checked,
+[data-theme="dark"] .select-accent option:hover {
+  background-color: #070e1f;
+  color: #fff;
 }
 
 [data-theme="dark"] .select option:disabled {
