@@ -29,7 +29,20 @@ export default function Login() {
     <div className="flex min-h-screen items-center justify-center bg-primary-900 p-4">
       <div className="w-full max-w-md">
         <div className="mb-6 text-center">
-          <h1 className="text-2xl font-bold text-white">EquipHub</h1>
+          <img
+            src="/cspc-logo.png"
+            alt="Camarines Sur Polytechnic Colleges seal"
+            className="mx-auto mb-3 h-20 w-20 object-contain"
+            width="80"
+            height="80"
+          />
+          <p className="text-sm font-semibold text-white">
+            Camarines Sur Polytechnic Colleges
+          </p>
+          <p className="text-xs text-slate-300">Nabua, Camarines Sur</p>
+          <h1 className="mt-2 text-xl font-bold text-white">
+            Equipment Borrowing System
+          </h1>
           <p className="text-sm text-slate-300">
             Your campus equipment desk, online
           </p>

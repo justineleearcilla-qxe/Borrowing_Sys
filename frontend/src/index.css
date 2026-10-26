@@ -28,6 +28,77 @@
     background-attachment: fixed;
   }
 
+  .cspc-background {
+    position: fixed;
+    z-index: -1;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    background: #142b52;
+  }
+
+  .cspc-background__image,
+  .cspc-background__gradient,
+  .cspc-background__light {
+    position: absolute;
+    pointer-events: none;
+  }
+
+  .cspc-background__image {
+    inset: 0;
+    background-image: url("/images/cspc-campus.png");
+    background-position: center;
+    background-size: cover;
+    opacity: 0.82;
+  }
+
+  .cspc-background__gradient {
+    inset: 0;
+    background: linear-gradient(
+      110deg,
+      rgb(10 27 54 / 70%) 0%,
+      rgb(20 43 82 / 32%) 25%,
+      rgb(79 125 243 / 58%) 48%,
+      rgb(139 197 255 / 40%) 61%,
+      rgb(11 29 58 / 66%) 100%
+    );
+    background-size: 350% 350%;
+    animation: cspc-gradient-sweep 4.5s ease-in-out infinite alternate;
+    will-change: background-position;
+  }
+
+  .cspc-background__light {
+    width: min(72vw, 880px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+  }
+
+  .cspc-background__light--blue {
+    top: -38%;
+    left: -30%;
+    background: radial-gradient(
+      circle,
+      rgb(79 125 243 / 64%) 0%,
+      rgb(79 125 243 / 34%) 34%,
+      transparent 70%
+    );
+    animation: cspc-light-drift-blue 4.5s ease-in-out infinite alternate;
+  }
+
+  .cspc-background__light--sky {
+    right: -32%;
+    bottom: -58%;
+    background: radial-gradient(
+      circle,
+      rgb(139 197 255 / 56%) 0%,
+      rgb(79 125 243 / 30%) 38%,
+      transparent 72%
+    );
+    animation: cspc-light-drift-sky 5.5s ease-in-out infinite alternate;
+  }
+
   ::selection {
     @apply bg-amber-200 text-primary-950;
   }
@@ -40,6 +111,37 @@
     to {
       opacity: 1;
       transform: translateY(0);
+    }
+  }
+
+  @keyframes cspc-gradient-sweep {
+    from {
+      background-position: 0% 50%;
+    }
+    to {
+      background-position: 100% 50%;
+    }
+  }
+
+  @keyframes cspc-light-drift-blue {
+    from {
+      opacity: 0.62;
+      transform: translate3d(-2vw, -2vh, 0) scale(0.9);
+    }
+    to {
+      opacity: 0.9;
+      transform: translate3d(38vw, 30vh, 0) scale(1.14);
+    }
+  }
+
+  @keyframes cspc-light-drift-sky {
+    from {
+      opacity: 0.52;
+      transform: translate3d(2vw, 2vh, 0) scale(0.9);
+    }
+    to {
+      opacity: 0.82;
+      transform: translate3d(-34vw, -30vh, 0) scale(1.12);
     }
   }
 }
