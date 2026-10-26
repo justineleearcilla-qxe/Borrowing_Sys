@@ -177,7 +177,7 @@ router.get(
   requireAuth,
   requireAdmin,
   asyncHandler(async (req, res) => {
-    const { status } = req.query as Record<string, string | undefined>;
+    const { status, q } = req.query as Record<string, string | undefined>;
     const where: Prisma.LoanWhereInput = {};
     if (
       status &&
@@ -191,6 +191,16 @@ router.get(
       ].includes(status)
     ) {
       where.status = status as RequestStatus;
+    }
+    if (q) {
+      const needle = reqStr(q, "Search", { min: 1, max: 100 });
+      where.OR = [
+        { purpose: { contains: needle, mode: "insensitive" } },
+        { item: { name: { contains: needle, mode: "insensitive" } } },
+        { item: { code: { contains: needle, mode: "insensitive" } } },
+        { user: { name: { contains: needle, mode: "insensitive" } } },
+        { user: { email: { contains: needle, mode: "insensitive" } } },
+      ];
     }
     let loans = await prisma.loan.findMany({
       where,

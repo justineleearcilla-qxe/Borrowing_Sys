@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, apiErrorMessage } from '../../api/client'
 import type { Loan, LoanStatus } from '../../types'
 import { formatDate, loanStatusTone } from '../../lib/format'
-import { Alert, Badge, Button, Card, CardHeader, EmptyState, Field, Modal, PageHeader, Spinner, Textarea } from '../../components/ui'
+import { Alert, Badge, Button, Card, CardHeader, EmptyState, Field, Input, Modal, PageHeader, Spinner, Textarea } from '../../components/ui'
 
 const TABS: Array<{ key: string; label: string }> = [
   { key: 'PENDING', label: 'Pending' },
@@ -15,6 +15,8 @@ const TABS: Array<{ key: string; label: string }> = [
 
 export default function AdminRequests() {
   const [status, setStatus] = useState<string>('PENDING')
+  const [query, setQuery] = useState('')
+  const [search, setSearch] = useState('')
   const [loans, setLoans] = useState<Loan[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -22,25 +24,40 @@ export default function AdminRequests() {
   const [rejectLoan, setRejectLoan] = useState<Loan | null>(null)
   const [rejectRemarks, setRejectRemarks] = useState('')
 
-  function load(s: string) {
+  function load(s: string, q: string) {
     setLoading(true)
+    setError('')
+    const params = {
+      ...(s === 'ALL' ? {} : { status: s }),
+      ...(q ? { q } : {}),
+    }
     api
-      .get<Loan[]>('/loans', { params: s === 'ALL' ? {} : { status: s } })
+      .get<Loan[]>('/loans', { params })
       .then((res) => setLoans(res.data))
       .catch((e) => setError(apiErrorMessage(e)))
       .finally(() => setLoading(false))
   }
 
   useEffect(() => {
-    load(status)
-  }, [status])
+    const timer = window.setTimeout(() => setSearch(query.trim()), 250)
+    return () => window.clearTimeout(timer)
+  }, [query])
+
+  useEffect(() => {
+    load(status, search)
+  }, [status, search])
 
   async function act(id: number, fn: () => Promise<unknown>) {
     setBusyId(id)
     setError('')
     try {
       await fn()
-      await api.get<Loan[]>('/loans', { params: status === 'ALL' ? {} : { status } }).then((res) => setLoans(res.data))
+      await api.get<Loan[]>('/loans', {
+        params: {
+          ...(status === 'ALL' ? {} : { status }),
+          ...(search ? { q: search } : {}),
+        },
+      }).then((res) => setLoans(res.data))
     } catch (e) {
       setError(apiErrorMessage(e))
     } finally {
@@ -66,18 +83,36 @@ export default function AdminRequests() {
         </div>
       )}
 
-      <div className="mb-4 grid w-full grid-cols-2 gap-2 sm:grid-cols-3 md:flex md:flex-wrap md:gap-0 md:border-b md:border-slate-200">
-        {[{ key: 'ALL', label: 'All' }, ...TABS].map((t) => (
-          <button
-            key={t.key}
-            onClick={() => setStatus(t.key)}
-            className={`min-w-0 whitespace-nowrap border px-3 py-2 text-sm font-semibold transition-colors sm:px-4 md:-mb-px md:shrink-0 ${
-              status === t.key ? 'border-primary-800 bg-white text-primary-800 md:border-b-white' : 'border-transparent bg-slate-50 text-slate-500 hover:text-slate-700'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+      <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div
+          role="group"
+          aria-label="Filter requests by status"
+          className="flex max-w-full gap-1 overflow-x-auto border border-slate-200 bg-slate-100 p-1"
+        >
+          {[{ key: 'ALL', label: 'All' }, ...TABS].map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              aria-pressed={status === t.key}
+              onClick={() => setStatus(t.key)}
+              className={`shrink-0 whitespace-nowrap border px-3 py-2 text-sm font-semibold transition-colors ${
+                status === t.key
+                  ? 'border-primary-800 bg-primary-800 text-white shadow-sm'
+                  : 'border-transparent bg-transparent text-slate-600 hover:bg-white hover:text-primary-800'
+              }`}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <Input
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search borrower, item or purpose..."
+          aria-label="Search requests by borrower, item or purpose"
+          maxLength={100}
+          className="w-full md:max-w-xs"
+        />
       </div>
 
       <Card>
@@ -88,7 +123,10 @@ export default function AdminRequests() {
           </div>
         ) : loans.length === 0 ? (
           <div className="p-5">
-            <EmptyState title="No requests in this view" />
+            <EmptyState
+              title="No requests in this view"
+              hint={search ? `Nothing matches "${search}".` : undefined}
+            />
           </div>
         ) : (
           <div className="overflow-x-auto">

@@ -235,7 +235,7 @@
 }
 
 [data-theme="dark"] .select option:checked {
-  background-color: #1e40af;
+  background-color: #1d4ed8;
   color: #fff;
 }
 

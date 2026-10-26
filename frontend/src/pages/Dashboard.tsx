@@ -48,7 +48,11 @@ function LoanRows({ loans }: { loans: Loan[] }) {
 
 function ReservationRows({ reservations }: { reservations: Reservation[] }) {
   if (reservations.length === 0) {
-    return <EmptyState title="No pending reservations" />;
+    return (
+      <div className="p-4">
+        <EmptyState title="No pending reservations" />
+      </div>
+    );
   }
   return (
     <div className="divide-y divide-slate-200">

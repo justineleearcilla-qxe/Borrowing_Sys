@@ -17,7 +17,6 @@ import {
   Spinner,
   Textarea,
 } from "../../components/ui";
-import { Icon } from "../../components/Icon";
 
 const OPEN_STATUSES = ["PENDING", "APPROVED", "BORROWED", "OVERDUE"] as const;
 
@@ -320,78 +319,15 @@ export default function AdminCheckoutDesk() {
         </div>
       )}
 
-      <Card className="mb-6">
-        <CardHeader title="Today" />
-        {todayError && (
-          <div className="p-4">
-            <Alert tone="error">{todayError}</Alert>
-          </div>
-        )}
-        {todayLoading ? (
-          <div className="flex justify-center py-10 text-primary-800">
-            <Spinner className="h-7 w-7" />
-          </div>
-        ) : todayLoans.length === 0 && todayReservations.length === 0 ? (
-          <div className="p-4">
-            <EmptyState
-              title="Nothing needs attention today"
-              hint="Approved pickups, due-today loans, and overdue loans will appear here."
-            />
-          </div>
-        ) : (
-          <div className="divide-y divide-slate-200">
-            {todayReservations.map((reservation) => (
-              <div
-                key={`reservation-${reservation.id}`}
-                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5"
-              >
-                <div className="min-w-0">
-                  <p className="text-sm font-semibold text-slate-800">
-                    {reservation.item.name}{" "}
-                    <span className="font-normal">·</span>{" "}
-                    {reservation.user?.name}
-                  </p>
-                  <p className="text-xs text-slate-500">
-                    {reservation.item.code} · Qty {reservation.quantity} ·
-                    Pickup {formatDate(reservation.reservationDate)}
-                    {reservation.pickupTime
-                      ? ` at ${reservation.pickupTime}`
-                      : ""}
-                  </p>
-                  <Badge tone="blue" className="mt-1">
-                    Approved reservation
-                  </Badge>
-                </div>
-                <Button
-                  size="sm"
-                  disabled={busyKey === `reservation-${reservation.id}`}
-                  onClick={() => void pickupReservation(reservation)}
-                >
-                  {busyKey === `reservation-${reservation.id}`
-                    ? "Processing..."
-                    : "Mark picked up"}
-                </Button>
-              </div>
-            ))}
-            {todayLoans.map(renderLoan)}
-          </div>
-        )}
-      </Card>
-
       <Card>
         <CardHeader title="Find an item or borrower" />
         <div className="card-body space-y-4">
-          <div className="relative max-w-2xl">
-            <Icon
-              name="search"
-              className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"
-            />
+          <div className="max-w-2xl">
             <Input
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search item name, item code, or borrower name..."
               aria-label="Search by item name, item code, or borrower name"
-              className="pl-9"
             />
           </div>
           {searchError && <Alert tone="error">{searchError}</Alert>}
@@ -471,6 +407,64 @@ export default function AdminCheckoutDesk() {
             </div>
           )}
         </div>
+      </Card>
+
+      <Card className="mt-6">
+        <CardHeader title="Today" />
+        {todayError && (
+          <div className="p-4">
+            <Alert tone="error">{todayError}</Alert>
+          </div>
+        )}
+        {todayLoading ? (
+          <div className="flex justify-center py-10 text-primary-800">
+            <Spinner className="h-7 w-7" />
+          </div>
+        ) : todayLoans.length === 0 && todayReservations.length === 0 ? (
+          <div className="p-4">
+            <EmptyState
+              title="Nothing needs attention today"
+              hint="Approved pickups, due-today loans, and overdue loans will appear here."
+            />
+          </div>
+        ) : (
+          <div className="divide-y divide-slate-200">
+            {todayReservations.map((reservation) => (
+              <div
+                key={`reservation-${reservation.id}`}
+                className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-5"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-semibold text-slate-800">
+                    {reservation.item.name}{" "}
+                    <span className="font-normal">·</span>{" "}
+                    {reservation.user?.name}
+                  </p>
+                  <p className="text-xs text-slate-500">
+                    {reservation.item.code} · Qty {reservation.quantity} ·
+                    Pickup {formatDate(reservation.reservationDate)}
+                    {reservation.pickupTime
+                      ? ` at ${reservation.pickupTime}`
+                      : ""}
+                  </p>
+                  <Badge tone="blue" className="mt-1">
+                    Approved reservation
+                  </Badge>
+                </div>
+                <Button
+                  size="sm"
+                  disabled={busyKey === `reservation-${reservation.id}`}
+                  onClick={() => void pickupReservation(reservation)}
+                >
+                  {busyKey === `reservation-${reservation.id}`
+                    ? "Processing..."
+                    : "Mark picked up"}
+                </Button>
+              </div>
+            ))}
+            {todayLoans.map(renderLoan)}
+          </div>
+        )}
       </Card>
 
       <Modal
