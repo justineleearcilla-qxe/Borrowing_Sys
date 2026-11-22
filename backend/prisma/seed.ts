@@ -376,7 +376,6 @@ async function main() {
     where: { email: "admin@school.edu" },
     update: {
       name: "Avery Admin",
-      passwordHash,
       role: "ADMIN",
       status: "ACTIVE",
       department: "IT Services",
@@ -394,7 +393,6 @@ async function main() {
     where: { email: "maria.student@school.edu" },
     update: {
       name: "Maria Santos",
-      passwordHash,
       role: "STUDENT",
       status: "ACTIVE",
       department: "Computer Science",
@@ -412,7 +410,6 @@ async function main() {
     where: { email: "david.faculty@school.edu" },
     update: {
       name: "Dr. David Cruz",
-      passwordHash,
       role: "FACULTY",
       status: "ACTIVE",
       department: "Biology",
