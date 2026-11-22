@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { PrismaClient, ItemCondition, ItemStatus } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
@@ -365,7 +366,11 @@ const IMAGE_URLS: Record<string, string> = {
 };
 
 async function main() {
-  const passwordHash = await bcrypt.hash("Password123!", 10);
+  const seedPassword = process.env.SEED_USER_PASSWORD;
+  if (!seedPassword || seedPassword.length < 16) {
+    throw new Error("SEED_USER_PASSWORD must be set to a password with at least 16 characters");
+  }
+  const passwordHash = await bcrypt.hash(seedPassword, 10);
 
   const admin = await prisma.user.upsert({
     where: { email: "admin@school.edu" },

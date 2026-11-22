@@ -55,7 +55,7 @@ docker-compose.yml
 
 ## Quick Start (Docker)
 
-Requires Docker Desktop. This starts PostgreSQL, runs migrations + seed, the API on port 4000, and the web app on port 8080.
+Requires Docker Desktop. This starts PostgreSQL, applies migrations, and runs the API on port 4000 and web app on port 8080.
 
 ```bash
 docker compose up --build
@@ -63,7 +63,9 @@ docker compose up --build
 
 Then open http://localhost:8080
 
-- The backend automatically runs `prisma migrate deploy` and seeds the database on first start.
+- The backend automatically runs `prisma migrate deploy` at startup. Run the seed separately with a private
+  `SEED_USER_PASSWORD` of at least 16 characters; never use the seed script's accounts
+  with a shared or publicly known password.
 
 ## Quick Start (Manual / Local Dev)
 
@@ -79,7 +81,7 @@ cd backend
 npm install
 copy .env.example .env    # PowerShell: Copy-Item .env.example .env (then edit DATABASE_URL / JWT_SECRET if needed)
 npx prisma migrate dev --name init   # creates schema
-npx prisma db seed                   # loads demo data
+npm run seed                         # loads demo data; requires SEED_USER_PASSWORD in backend/.env
 npm run dev                          # API on http://localhost:4000
 ```
 
