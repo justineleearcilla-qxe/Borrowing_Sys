@@ -178,6 +178,15 @@
   .catalog-item {
     animation: catalog-reveal 420ms ease-out both;
   }
+  .catalog-item,
+  .catalog-item > div:first-child,
+  .catalog-item > a {
+    border-radius: 0;
+  }
+  .catalog-stats,
+  .catalog-stats > div {
+    border-radius: 0;
+  }
 
   .catalog-hero {
     background: linear-gradient(
@@ -245,6 +254,23 @@
     background-color: #fff;
     color: #111827;
   }
+  .select-accent {
+    border-color: #475569;
+    background-color: #070e1f;
+    color: #fff;
+  }
+  .select-accent:focus {
+    border-color: #5f6b80;
+    box-shadow: 0 0 0 1px #5f6b80;
+    background-color: #070e1f;
+    color: #fff;
+  }
+  .select.catalog-department-select,
+  .select.catalog-department-select:focus {
+    border-color: #1d4ed8;
+    background-color: #1d4ed8;
+    color: #fff;
+  }
   .select option {
     background-color: #fff;
     color: #1e293b;
@@ -256,6 +282,11 @@
   .select option:hover {
     background-color: #dbeafe;
     color: #172554;
+  }
+  .select-accent option:checked,
+  .select-accent option:hover {
+    background-color: #070e1f;
+    color: #fff;
   }
   .select option:disabled {
     color: #94a3b8;

@@ -115,18 +115,23 @@ export default function AdminUsers() {
           maxLength={100}
           className="w-full max-w-md flex-1"
         />
-        <Select
-          value={status}
-          onChange={(event) => setStatus(event.target.value as UserStatus | "ALL")}
-          aria-label="Filter users by status"
-          className="w-auto"
-        >
-          {STATUSES.map((value) => (
-            <option key={value} value={value}>
-              {value === "ALL" ? "All statuses" : value}
-            </option>
-          ))}
-        </Select>
+        <label className="label select-accent-label mb-0 ml-auto flex items-center gap-2">
+          Status
+          <Select
+            value={status}
+            onChange={(event) =>
+              setStatus(event.target.value as UserStatus | "ALL")
+            }
+            aria-label="Filter users by status"
+            className="w-auto select-accent"
+          >
+            {STATUSES.map((value) => (
+              <option key={value} value={value}>
+                {value === "ALL" ? "All statuses" : value}
+              </option>
+            ))}
+          </Select>
+        </label>
       </div>
       <Card>
         <CardHeader title={`${users.length} user(s)`} />
